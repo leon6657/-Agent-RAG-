@@ -1,21 +1,26 @@
 ﻿"""Simple custom agent with tool selection and memory."""
 
-# Import order: community BEFORE openai
-from app.ingest import build_embeddings  # noqa: F401 - forces langchain_community import
+from datetime import date
+
+from app.ingest import build_embeddings  # noqa: F401 - import order
 
 from app.memory import SimpleMemory
 from app.config import config
 
-_KB_PROMPT = """Based on the context below, answer the question.
+_KB_PROMPT = """Current date: {current_date}
+
+Based on the context below, answer the question.
 
 Context:
 {context}
 
 Question: {question}
 
-Answer concisely based on the context. If the context is not relevant, say so."""
+Answer concisely based on the context."""
 
-_CHAT_PROMPT = """You are a helpful assistant. Answer the question naturally.
+_CHAT_PROMPT = """Current date: {current_date}
+
+You are a helpful assistant. Answer the question naturally.
 
 Conversation history:
 {history}
@@ -24,15 +29,17 @@ Question: {question}
 
 Answer:"""
 
-_SELECT_PROMPT = """You have access to a knowledge base with notes about Python, ML, data structures.
-Given the user's question, decide if you need to search the knowledge base.
+_SELECT_PROMPT = """You have a knowledge base with notes about Python, ML, data structures ONLY.
+Decide if you MUST search the knowledge base to answer.
+
+Search ONLY if: the question asks about Python, ML, data structures, or specific technical concepts that are IN your notes.
+Do NOT search for: dates, weather, news, mathematics, general knowledge, greetings, creative tasks, code generation, or anything NOT in your notes.
+
+Current date: {current_date}
 
 Question: {question}
 
-Reply with exactly "search" if the question is about Python, ML, data structures, programming concepts, or specific topics from your notes.
-Reply with "chat" for greetings, general conversation, code examples, or anything else.
-
-Decision:"""
+Respond with exactly "search" or "chat":"""
 
 
 memory = SimpleMemory(window_size=5)
@@ -56,21 +63,23 @@ def _search_kb(query: str) -> str:
 
 
 def _should_search(question: str) -> bool:
-    decision = _call_llm(_SELECT_PROMPT, {"question": question}).strip().lower()
+    today = date.today().isoformat()
+    decision = _call_llm(_SELECT_PROMPT, {"question": question, "current_date": today}).strip().lower()
     return "search" in decision
 
 
 def chat(message: str) -> str:
+    today = date.today().isoformat()
     history = memory.get_history()
 
     if _should_search(message):
         context = _search_kb(message)
         if context:
-            response = _call_llm(_KB_PROMPT, {"context": context, "question": message})
+            response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today})
         else:
-            response = _call_llm(_CHAT_PROMPT, {"history": history or "None", "question": message})
+            response = _call_llm(_CHAT_PROMPT, {"history": history or "None", "question": message, "current_date": today})
     else:
-        response = _call_llm(_CHAT_PROMPT, {"history": history or "None", "question": message})
+        response = _call_llm(_CHAT_PROMPT, {"history": history or "None", "question": message, "current_date": today})
 
     memory.add_user(message)
     memory.add_assistant(response)
