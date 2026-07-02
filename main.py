@@ -2,10 +2,11 @@
 
 Usage:
     python main.py --ingest       Build/update vector store
-    python main.py --query        Interactive Q&A session
+    python main.py --query        Interactive Q and A session
 """
 
 import argparse
+import os
 import sys
 
 from app.ingest import run_ingest
@@ -15,7 +16,7 @@ from app.config import config
 
 def main():
     parser = argparse.ArgumentParser(
-        description="RAG Knowledge Base - Q&A with your Markdown notes"
+        description="RAG Knowledge Base - Q and A with your Markdown notes"
     )
     parser.add_argument(
         "--ingest",
@@ -25,7 +26,7 @@ def main():
     parser.add_argument(
         "--query",
         action="store_true",
-        help="Start interactive Q&A session",
+        help="Start interactive Q and A session",
     )
 
     args = parser.parse_args()
@@ -34,27 +35,23 @@ def main():
         parser.print_help()
         return
 
-    if args.ingest:
-        if not config.deepseek_api_key or config.deepseek_api_key.startswith("sk-your"):
-            print("ERROR: DEEPSEEK_API_KEY not configured.")
-            print("Set it in .env file or as environment variable.")
-            sys.exit(1)
-        import os
-        os.environ["HF_HOME"] = os.path.join(os.path.dirname(__file__), ".hf_cache")
+    os.environ.setdefault(
+        "HF_HOME", os.path.join(os.path.dirname(__file__), ".hf_cache")
+    )
 
+    if args.ingest:
         num_chunks = run_ingest()
         if num_chunks > 0:
             print(f"\nDone! Indexed {num_chunks} chunks.")
 
     if args.query:
-        if not config.deepseek_api_key or config.deepseek_api_key.startswith("sk-your"):
+        key = config.deepseek_api_key
+        if not key or key.startswith("sk-your"):
             print("ERROR: DEEPSEEK_API_KEY not configured.")
             print("Set it in .env file or as environment variable.")
             sys.exit(1)
-        import os
-        os.environ["HF_HOME"] = os.path.join(os.path.dirname(__file__), ".hf_cache")
 
-        print("RAG Knowledge Base - Interactive Q&A")
+        print("RAG Knowledge Base - Interactive Q and A")
         print("Type 'exit' to quit, 'clear' to clear screen")
         print("-" * 50)
 
@@ -67,8 +64,7 @@ def main():
                     print("Goodbye!")
                     break
                 if question.lower() == "clear":
-                    import os as _os
-                    _os.system("cls" if _os.name == "nt" else "clear")
+                    os.system("cls" if os.name == "nt" else "clear")
                     continue
 
                 print("\nAssistant: ", end="", flush=True)
