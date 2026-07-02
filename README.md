@@ -6,6 +6,8 @@
 
 当前已完成 **Phase 1**，一个可运行的最小 RAG 问答系统。
 
+> 详细演进记录和踩坑总结：[docs/project-summary.md](docs/project-summary.md)
+
 ---
 
 ## 快速开始
