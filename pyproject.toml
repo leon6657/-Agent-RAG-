@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "rag-kb"
+version = "0.1.0"
+description = "A minimal RAG knowledge base with Markdown notes"
+requires-python = ">=3.9"
+dependencies = [
+    "langchain-core>=0.3",
+    "langchain-community>=0.3",
+    "langchain-openai>=0.2",
+    "chromadb>=0.5",
+    "sentence-transformers>=3.0",
+    "python-dotenv>=1.0",
+    "pytest>=8.0",
+]
