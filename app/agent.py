@@ -1,4 +1,10 @@
-﻿"""Simple custom agent: always search KB first, fall back to chat if no relevant results."""
+﻿"""Simple custom agent: always search KB first, fall back to chat.
+
+Limitations:
+- KB search: searches notes for relevant content
+- Chat: uses DeepSeek own knowledge as fallback
+- No web search: requires Bing/Google API key
+"""
 
 from datetime import date
 
@@ -20,7 +26,7 @@ Answer concisely based on the context."""
 
 _CHAT_PROMPT = """Current date: {current_date}
 
-You are a helpful assistant. Answer the question naturally.
+You are a helpful assistant with expertise in programming, tech, and general knowledge.
 
 Conversation history:
 {history}
@@ -28,7 +34,6 @@ Conversation history:
 Question: {question}
 
 Answer:"""
-
 
 memory = SimpleMemory(window_size=5)
 _SEARCH_THRESHOLD = 0.35
@@ -47,23 +52,20 @@ def _search_kb(query: str) -> str:
     from app.query import _search
     try:
         return _search(query)
-    except ValueError as e:
+    except ValueError:
         return ""
 
 
 def _has_relevant(query: str) -> bool:
-    """Check if KB has relevant content for this query."""
     emb = build_embeddings()
     vec = emb.embed_query(query)
-    top_score = store.search_top_score(vec)
-    return top_score >= _SEARCH_THRESHOLD
+    return store.search_top_score(vec) >= _SEARCH_THRESHOLD
 
 
 def chat(message: str) -> str:
     today = date.today().isoformat()
     history = memory.get_history()
 
-    # Always search KB first, check relevance
     if _has_relevant(message):
         context = _search_kb(message)
         if context:
