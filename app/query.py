@@ -1,41 +1,45 @@
 """Query interface: ask questions against the RAG knowledge base."""
 
+from typing import List
+
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnableLambda
+
 from app.config import config
 from app.ingest import _get_chroma_collection, build_embeddings
 from app.chain import build_chain
 
 
-def get_retriever():
-    """Get the ChromaDB retriever."""
-    collection = _get_chroma_collection()
-    count = collection.count()
-    if count == 0:
-        raise ValueError(
-            "Vector store is empty. Run 'python main.py --ingest' first."
-        )
-
-    from langchain_community.vectorstores import Chroma as LangChainChroma
-
+def _search_for_retriever(query: str) -> List[Document]:
+    """Search ChromaDB for relevant documents."""
+    coll = _get_chroma_collection()
+    if coll.count() == 0:
+        raise ValueError("Vector store is empty. Run 'python main.py --ingest' first.")
     emb = build_embeddings()
-    from chromadb import PersistentClient
-    client = PersistentClient(path=config.chroma_persist_dir)
-    vector_store = LangChainChroma(
-        client=client,
-        embedding_function=emb,
-        collection_name="rag_kb",
-    )
-    return vector_store.as_retriever(search_kwargs={"k": config.retrieval_top_k})
+    vector = emb.embed_query(query)
+    results = coll.query(query_embeddings=[vector], n_results=config.retrieval_top_k)
+    docs = []
+    doc_ids = results.get("ids", [[]])[0]
+    documents_list = results.get("documents", [[]])[0]
+    metadatas_list = results.get("metadatas", [[]])[0]
+    for i in range(len(doc_ids)):
+        meta = metadatas_list[i] if i < len(metadatas_list) and metadatas_list[i] else {}
+        docs.append(Document(page_content=documents_list[i], metadata=meta))
+    return docs
+
+
+def get_retriever():
+    """Get a retriever for the RAG chain."""
+    return RunnableLambda(_search_for_retriever)
 
 
 def ask(question: str) -> str:
-    """Ask a question and get an answer with sources."""
     retriever = get_retriever()
     chain = build_chain(retriever)
     return chain.invoke(question)
 
 
 def ask_stream(question: str):
-    """Ask a question and stream the answer token by token."""
     retriever = get_retriever()
     chain = build_chain(retriever)
     for chunk in chain.stream(question):

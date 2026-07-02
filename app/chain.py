@@ -9,7 +9,6 @@ from app.config import config
 
 
 def build_prompt() -> ChatPromptTemplate:
-    """Build the QA prompt template."""
     template = (
         "You are a helpful assistant answering questions based on the provided context.\n\n"
         "Context:\n{context}\n\n"
@@ -23,7 +22,6 @@ def build_prompt() -> ChatPromptTemplate:
 
 
 def build_llm():
-    """Build DeepSeek Chat LLM."""
     if not config.deepseek_api_key:
         raise ValueError("DEEPSEEK_API_KEY is not set. Add it to .env file.")
     return ChatOpenAI(
@@ -31,12 +29,12 @@ def build_llm():
         api_key=config.deepseek_api_key,
         base_url=config.deepseek_api_base,
         temperature=0.3,
-        streaming=True,
+        timeout=30,
+        max_retries=1,
     )
 
 
 def build_chain(retriever):
-    """Build the complete LCEL RAG chain."""
     def format_docs(docs):
         return "\n\n".join(
             f"[Source: {d.metadata.get('source', 'unknown')}]\n{d.page_content}"
