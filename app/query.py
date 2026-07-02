@@ -1,46 +1,48 @@
-"""Query interface: ask questions against the RAG knowledge base."""
+﻿"""Query interface: ask questions against the RAG knowledge base."""
 
-from typing import List
-
-from langchain_core.documents import Document
-from langchain_core.runnables import RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from app.config import config
-from app.ingest import _get_chroma_collection, build_embeddings
-from app.chain import build_chain
+from app.ingest import build_embeddings
+from app import store
 
 
-def _search_for_retriever(query: str) -> List[Document]:
-    """Search ChromaDB for relevant documents."""
-    coll = _get_chroma_collection()
-    if coll.count() == 0:
+def _search(query: str) -> str:
+    if store.count() == 0:
         raise ValueError("Vector store is empty. Run 'python main.py --ingest' first.")
     emb = build_embeddings()
     vector = emb.embed_query(query)
-    results = coll.query(query_embeddings=[vector], n_results=config.retrieval_top_k)
-    docs = []
-    doc_ids = results.get("ids", [[]])[0]
-    documents_list = results.get("documents", [[]])[0]
-    metadatas_list = results.get("metadatas", [[]])[0]
-    for i in range(len(doc_ids)):
-        meta = metadatas_list[i] if i < len(metadatas_list) and metadatas_list[i] else {}
-        docs.append(Document(page_content=documents_list[i], metadata=meta))
-    return docs
-
-
-def get_retriever():
-    """Get a retriever for the RAG chain."""
-    return RunnableLambda(_search_for_retriever)
+    docs = store.search(vector, k=config.retrieval_top_k)
+    parts = []
+    for d in docs:
+        src = d.metadata.get("source", "?")
+        parts.append(f"[{src}]\n{d.page_content}")
+    return "\n\n".join(parts)
 
 
 def ask(question: str) -> str:
-    retriever = get_retriever()
-    chain = build_chain(retriever)
-    return chain.invoke(question)
+    context = _search(question)
+    from app.chain import build_llm
+    prompt = ChatPromptTemplate.from_template(
+        "Based on the context below, answer the question.\n\n"
+        "Context:\n{context}\n\n"
+        "Question: {question}\n\n"
+        "Answer:"
+    )
+    chain = prompt | build_llm() | StrOutputParser()
+    return chain.invoke({"context": context, "question": question})
 
 
 def ask_stream(question: str):
-    retriever = get_retriever()
-    chain = build_chain(retriever)
-    for chunk in chain.stream(question):
+    context = _search(question)
+    from app.chain import build_llm
+    prompt = ChatPromptTemplate.from_template(
+        "Based on the context below, answer the question.\n\n"
+        "Context:\n{context}\n\n"
+        "Question: {question}\n\n"
+        "Answer:"
+    )
+    chain = prompt | build_llm() | StrOutputParser()
+    for chunk in chain.stream({"context": context, "question": question}):
         yield chunk
