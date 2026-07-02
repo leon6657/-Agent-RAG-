@@ -1,0 +1,122 @@
+[
+  {
+    "id": "q01",
+    "q": "Python中如何定义函数？",
+    "a": "def\\u5173\\u952e\\u5b57",
+    "s": "python-basics.md"
+  },
+  {
+    "id": "q02",
+    "q": "函数的*args和**kwargs有什么区别？",
+    "a": "*args",
+    "s": "python-basics.md"
+  },
+  {
+    "id": "q03",
+    "q": "Python函数的默认参数怎么用？",
+    "a": "\\u9ed8\\u8ba4\\u53c2\\u6570",
+    "s": "python-basics.md"
+  },
+  {
+    "id": "q04",
+    "q": "函数内部如何修改全局变量？",
+    "a": "global",
+    "s": "python-basics.md"
+  },
+  {
+    "id": "q05",
+    "q": "Python类的__init__方法的作用是什么？",
+    "a": "__init__",
+    "s": "python-oop.md"
+  },
+  {
+    "id": "q06",
+    "q": "子类如何继承父类？",
+    "a": "\\u7ee7\\u627f",
+    "s": "python-oop.md"
+  },
+  {
+    "id": "q07",
+    "q": "Python魔术方法的特征是什么？",
+    "a": "\\u9b54\\u672f\\u65b9\\u6cd5",
+    "s": "python-oop.md"
+  },
+  {
+    "id": "q08",
+    "q": "classmethod和staticmethod的区别？",
+    "a": "classmethod",
+    "s": "python-oop.md"
+  },
+  {
+    "id": "q09",
+    "q": "列表和元组的根本区别？",
+    "a": "\\u5217\\u8868\\u53ef\\u53d8",
+    "s": "data-structures.md"
+  },
+  {
+    "id": "q10",
+    "q": "列表推导式的语法是什么？",
+    "a": "\\u5217\\u8868\\u63a8\\u5bfc\\u5f0f",
+    "s": "data-structures.md"
+  },
+  {
+    "id": "q11",
+    "q": "dict.get(key, default)的作用？",
+    "a": "dict.get",
+    "s": "data-structures.md"
+  },
+  {
+    "id": "q12",
+    "q": "Python集合支持哪些运算？",
+    "a": "\\u96c6\\u5408",
+    "s": "data-structures.md"
+  },
+  {
+    "id": "q13",
+    "q": "监督学习和无监督学习的核心区别？",
+    "a": "\\u76d1\\u7763\\u5b66\\u4e60",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q14",
+    "q": "训练集、验证集、测试集各自用途？",
+    "a": "\\u8bad\\u7ec3\\u96c6",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q15",
+    "q": "什么是过拟合？怎么解决？",
+    "a": "\\u8fc7\\u62df\\u5408",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q16",
+    "q": "什么是欠拟合？怎么解决？",
+    "a": "\\u6b20\\u62df\\u5408",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q17",
+    "q": "特征工程包括哪些操作？",
+    "a": "\\u7279\\u5f81\\u5de5\\u7a0b",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q18",
+    "q": "K-Means属于哪类学习算法？",
+    "a": "K-Means",
+    "s": "ml-basics.md"
+  },
+  {
+    "id": "q19",
+    "q": "Python中nonlocal关键字的用途？",
+    "a": "nonlocal",
+    "s": "python-basics.md"
+  },
+  {
+    "id": "q20",
+    "q": "装饰器的@语法是如何工作的？",
+    "a": "@\\u88c5\\u9970\\u5668",
+    "s": "hello.md"
+  }
+]
