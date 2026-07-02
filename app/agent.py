@@ -1,11 +1,11 @@
-﻿"""Simple custom agent with tool selection and memory."""
+﻿"""Simple custom agent: always search KB first, fall back to chat if no relevant results."""
 
 from datetime import date
 
-from app.ingest import build_embeddings  # noqa: F401 - import order
-
+from app.ingest import build_embeddings
 from app.memory import SimpleMemory
 from app.config import config
+from app import store
 
 _KB_PROMPT = """Current date: {current_date}
 
@@ -29,20 +29,9 @@ Question: {question}
 
 Answer:"""
 
-_SELECT_PROMPT = """You have a knowledge base with notes about Python, ML, data structures ONLY.
-Decide if you MUST search the knowledge base to answer.
-
-Search ONLY if: the question asks about Python, ML, data structures, or specific technical concepts that are IN your notes.
-Do NOT search for: dates, weather, news, mathematics, general knowledge, greetings, creative tasks, code generation, or anything NOT in your notes.
-
-Current date: {current_date}
-
-Question: {question}
-
-Respond with exactly "search" or "chat":"""
-
 
 memory = SimpleMemory(window_size=5)
+_SEARCH_THRESHOLD = 0.35
 
 
 def _call_llm(prompt_template: str, variables: dict) -> str:
@@ -59,20 +48,23 @@ def _search_kb(query: str) -> str:
     try:
         return _search(query)
     except ValueError as e:
-        return f"Error: {e}"
+        return ""
 
 
-def _should_search(question: str) -> bool:
-    today = date.today().isoformat()
-    decision = _call_llm(_SELECT_PROMPT, {"question": question, "current_date": today}).strip().lower()
-    return "search" in decision
+def _has_relevant(query: str) -> bool:
+    """Check if KB has relevant content for this query."""
+    emb = build_embeddings()
+    vec = emb.embed_query(query)
+    top_score = store.search_top_score(vec)
+    return top_score >= _SEARCH_THRESHOLD
 
 
 def chat(message: str) -> str:
     today = date.today().isoformat()
     history = memory.get_history()
 
-    if _should_search(message):
+    # Always search KB first, check relevance
+    if _has_relevant(message):
         context = _search_kb(message)
         if context:
             response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today})
