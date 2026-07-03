@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.pyc
 .venv/
@@ -8,62 +8,14 @@ venv/
 # Environment
 .env
 
-# ChromaDB persistent storage
+# Cache and logs
+.cache/
+logs/
+
+# Vector store data
 chroma_db/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-Thumbs.db
-.DS_Store
-
-# notebooks checkpoint
-.ipynb_checkpoints/
-
-# temp
-tmp/
-temp/
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-*.egg-info/
-
-# Environment
-.env
-
-# ChromaDB persistent storage
-chroma_db/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-Thumbs.db
-.DS_Store
-
-# notebooks checkpoint
-.ipynb_checkpoints/
-
-# temp
-tmp/
-temp/
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-*.egg-info/
-
-# Environment
-.env
-
-# ChromaDB persistent storage
-chroma_db/
+vector_store.json
+chroma_db_test/
 
 # Model cache
 .hf_cache/
@@ -83,3 +35,4 @@ Thumbs.db
 # temp
 tmp/
 temp/
+*.txt

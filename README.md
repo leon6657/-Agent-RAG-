@@ -1,10 +1,8 @@
 # RAG 知识库 — 从零到 LangGraph 的四阶段演进
 
-一个基于 Markdown 笔记的最小 RAG（检索增强生成）知识库，分四个阶段逐步演进：
+一个基于 Markdown 笔记的 RAG（检索增强生成）知识库，分四个阶段逐步演进：
 
 **Phase 1 最小 RAG → Phase 2 优化检索 → Phase 3 Agent → Phase 4 LangGraph**
-
-当前已完成 **Phase 1**，一个可运行的最小 RAG 问答系统。
 
 > 详细演进记录和踩坑总结：[docs/project-summary.md](docs/project-summary.md)
 
@@ -97,8 +95,8 @@ rag-project/
 | 阶段 | 内容 | 状态 |
 |------|------|------|
 | Phase 1 | 最小 RAG：文档 → 分块 → 向量检索 → LLM 生成 | ✅ 完成 |
-| Phase 2 | 优化 RAG：重排序、查询改写、混合检索、评测 | ⏳ 待开始 |
-| Phase 3 | Agent：知识库 Tool、对话记忆、ReAct 循环 | ⏳ 待开始 |
+| Phase 2 | 优化 RAG：重排序、查询改写、混合检索、评测 | ✅ 完成 |
+| Phase 3 | Agent：知识库 Tool、对话记忆、ReAct 循环 | ✅ 完成 |
 | Phase 4 | LangGraph：有向图、状态管理、条件路由 | ⏳ 待开始 |
 
 ---
