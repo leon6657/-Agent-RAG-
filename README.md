@@ -3,7 +3,7 @@
 > 从零搭建的 Markdown 笔记 RAG 系统，经历四阶段演进：最小原型 → 优化检索 → Agent 智能体 → 工程化闭环。
 > 完整解决了 ChromaDB 兼容性、LangChain 导入冲突、Agent 决策逻辑、联网搜索等关键技术难题。
 
-> **详细演进记录：** [docs/project-summary.md](docs/project-summary.md) · **完整使用说明：** [USAGE.md](USAGE.md) · **设计文档：** [docs/superpowers/specs/](docs/superpowers/specs/)
+> **详细演进记录：** [docs/project-summary.md](docs/project-summary.md) · **完整使用说明：** [USAGE.md](USAGE.md) · **设计文档：** [docs/](docs/superpowers/specs/)
 
 ---
 
@@ -54,6 +54,35 @@
 ```
 
 ---
+
+## 项目结构
+
+```
+rag-project/
+├── data/                       # 你的笔记（11 篇 .md 文件）
+├── app/
+│   ├── config.py               # 配置管理（API Key、路径、参数）
+│   ├── store.py                # numpy 向量存储（JSON 持久化 + 余弦相似度搜索）
+│   ├── ingest.py               # 文档加载 → 分块 → BGE 嵌入 → 存储
+│   ├── query.py                # 问答接口（先搜索再调用 LLM）
+│   ├── chain.py                # LCEL 链定义（ChatOpenAI + Prompt）
+│   ├── retriever.py            # BM25 + 向量混合检索
+│   ├── reranker.py             # 关键词重叠重排序
+│   ├── query_rewriter.py       # Multi-Query 查询改写
+│   ├── memory.py               # 对话记忆（滑动窗口 5 轮）
+│   └── agent.py                # Agent（知识库 → 联网搜索 → 自由对话）
+├── evaluation/
+│   ├── questions.json          # 20 个 QA 对
+│   ├── metrics.py              # Recall@k / MRR / Precision
+│   └── runner.py               # 评测运行 + 对比报告
+├── main.py                     # CLI 入口（--ingest / --query / --chat / --serve）
+├── vector_store.json           # 43 个文档片段（已嵌入）
+└── .hf_cache/                  # BGE 模型缓存（离线可用）
+```
+
+---
+
+## 四阶段演进路线
 
 ## 关键成果
 
