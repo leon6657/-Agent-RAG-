@@ -155,9 +155,9 @@ phase4-project-closure   # 工程化闭环
 ## 设计文档
 
 - [整体设计](docs/superpowers/specs/rag-knowledge-base-design.md)
-- [Phase 1 minimal-RAG ](docs\superpowers\plans\phase1-minimal-rag.md)
-- [Phase 2 optimized-RAG ](docs\superpowers\plans\phase2-optimized-rag.md)
-- [Phase 3 Agent 设计](docs\superpowers\plans\phase3-agent-design.md)
-- [Phase 4 项目闭环设计](docs\superpowers\plans\phase4-closure-design.md)
-- [项目总结](docs\project-summary.md)
+- [Phase 1 minimal-RAG ](docs/superpowers/plans/phase1-minimal-rag.md)
+- [Phase 2 optimized-RAG ](docs/superpowers/plans/phase2-optimized-rag.md)
+- [Phase 3 Agent 设计](docs/superpowers/plans/phase3-agent-design.md)
+- [Phase 4 项目闭环设计](docs/superpowers/plans/phase4-closure-design.md)
+- [项目总结](docs/project-summary.md)
 
