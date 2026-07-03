@@ -6,6 +6,9 @@
 
 > 详细演进记录和踩坑总结：[docs/project-summary.md](docs/project-summary.md)
 
+> 完整使用说明：[USAGE.md](USAGE.md)
+
+
 ---
 
 ## 快速开始
