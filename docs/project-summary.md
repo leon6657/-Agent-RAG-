@@ -25,7 +25,7 @@ rag-project/
 │   ├── questions.json          # 20 个 QA 对
 │   ├── metrics.py              # Recall@k / MRR / Precision
 │   └── runner.py               # 评测运行 + 对比报告
-├── main.py                     # CLI 入口（--ingest / --query / --chat）
+├── main.py                     # CLI 入口（--ingest / --query / --chat / --serve）
 ├── vector_store.json           # 43 个文档片段（已嵌入）
 └── .hf_cache/                  # BGE 模型缓存（离线可用）
 ```
@@ -55,14 +55,38 @@ rag-project/
 ### Phase 3：Agent
 
 **新增：**
+- `memory.py` — 对话记忆（滑动窗口 5 轮）
+- `agent.py` — Agent（知识库 → 联网搜索 → 自由对话）
+
+**核心改进：** 从"LLM 判断是否搜索"改为"先搜索，再用余弦相似度阈值（0.35）判断是否相关"
+
+**输出：** `python main.py --chat` Agent 模式
+
+### Phase 4：项目闭环
+
+**新增：**
+- `api.py` — FastAPI Web 服务（端口 8000）
+- `app/cache.py` — 响应缓存（diskcache，Redis-ready 接口）
+- `app/logging_setup.py` — 日志监控（滚动文件 + 控制台 + 请求 ID）
+- `app/state.py` + `app/graph.py` — LangGraph 有向状态图
+- `static/index.html` — 聊天界面 Web UI
+
+**关键改进：**
+- 分离前后端，前端独立为 HTML 文件
+- 聊天历史记录保留
+- Enter 发送 / Shift+Enter 换行
+- 相同问题秒回（缓存）
+- 图结构 Agent 取代 if-else 判断
+
+**输出：** `python main.py --serve` 启动 Web 服务
+
+### Phase 3：Agent
+
+**新增：**
 - `memory.py` — 对话记忆
 - `agent.py` — 自动判断：笔记相关→搜索知识库，实时信息→联网搜索，日常对话→自由聊天
 
 **核心改进：** 从"LLM 判断是否搜索"改为"先搜索，再用向量相似度阈值（0.35）判断是否相关"
-
-### Phase 4：LangGraph（规划中）
-
-将 Agent 的控制流拆为有向图，显式控制状态流。
 
 ---
 
@@ -246,7 +270,10 @@ python main.py --query
 # 5. Agent 模式（自动判断：知识库 / 联网搜索 / 自由对话）
 python main.py --chat
 
-# 6. 运行评测
+# 6. 启动 Web 服务（浏览器访问 http://localhost:8000）
+python main.py --serve
+
+# 7. 运行评测
 python evaluation/runner.py
 ```
 
@@ -260,6 +287,9 @@ python evaluation/runner.py
 | Embedding | BAAI/bge-small-zh-v1.5 | 中文文本向量化 |
 | 向量存储 | numpy + JSON | 余弦相似度搜索 |
 | 框架 | LangChain | LCEL 链 + Agent 工具 |
+| Web 服务 | FastAPI + Uvicorn | REST 接口（端口 8000）|
+| 缓存 | diskcache | 响应缓存（支持切换 Redis）|
+| 状态图 | LangGraph | Agent 有向状态图 |
 | CLI | argparse | 命令行入口 |
 
 ---
@@ -276,7 +306,7 @@ phase3-agent         # Phase 3：Agent
 
 ## 后续方向
 
-- **Phase 4：LangGraph** — 将 Agent 控制流拆为有向图
+- **Phase 4 已完成** — FastAPI 封装 + 缓存优化 + 日志监控 + LangGraph 状态图
 - **更好的评测** — 更细粒度的评估指标
 - **多文档格式** — 支持 PDF、网页等
 - **知识库管理** — 增删改查 CRUD 界面
