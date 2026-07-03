@@ -40,49 +40,20 @@
     ┌──────────┴──────────┐
     ▼                     ▼
 ┌──────────┐        ┌──────────┐
-│ 严格 RAG │        │  Agent   │
+│ 严格 RAG │        │  Agent    │
 │ (query)  │        │ (chat)   │
-│ 仅笔记   │        │ 笔记+联网 │
+│ 仅笔记   │        │ 笔记+联网  │
 └──────────┘        └──────────┘
     │                     │
     └──────────┬──────────┘
                ▼
 ┌──────────────────────────────┐
 │      向量检索 + LLM 生成      │
-│  BGE → 相似度搜索 → DeepSeek │
+│  BGE → 相似度搜索 → DeepSeek  │
 └──────────────────────────────┘
 ```
 
 ---
-
-## 项目结构
-
-```
-rag-project/
-├── data/                       # 你的笔记（11 篇 .md 文件）
-├── app/
-│   ├── config.py               # 配置管理（API Key、路径、参数）
-│   ├── store.py                # numpy 向量存储（JSON 持久化 + 余弦相似度搜索）
-│   ├── ingest.py               # 文档加载 → 分块 → BGE 嵌入 → 存储
-│   ├── query.py                # 问答接口（先搜索再调用 LLM）
-│   ├── chain.py                # LCEL 链定义（ChatOpenAI + Prompt）
-│   ├── retriever.py            # BM25 + 向量混合检索
-│   ├── reranker.py             # 关键词重叠重排序
-│   ├── query_rewriter.py       # Multi-Query 查询改写
-│   ├── memory.py               # 对话记忆（滑动窗口 5 轮）
-│   └── agent.py                # Agent（知识库 → 联网搜索 → 自由对话）
-├── evaluation/
-│   ├── questions.json          # 20 个 QA 对
-│   ├── metrics.py              # Recall@k / MRR / Precision
-│   └── runner.py               # 评测运行 + 对比报告
-├── main.py                     # CLI 入口（--ingest / --query / --chat / --serve）
-├── vector_store.json           # 43 个文档片段（已嵌入）
-└── .hf_cache/                  # BGE 模型缓存（离线可用）
-```
-
----
-
-## 四阶段演进路线
 
 ## 关键成果
 
@@ -184,5 +155,9 @@ phase4-project-closure   # 工程化闭环
 ## 设计文档
 
 - [整体设计](docs/superpowers/specs/rag-knowledge-base-design.md)
-- [Phase 3 Agent 设计](docs/superpowers/specs/phase3-agent-design.md)
-- [Phase 4 项目闭环设计](docs/superpowers/specs/phase4-closure-design.md)
+- [Phase 1 minimal-RAG ](docs\superpowers\plans\phase1-minimal-rag.md)
+- [Phase 2 optimized-RAG ](docs\superpowers\plans\phase2-optimized-rag.md)
+- [Phase 3 Agent 设计](docs\superpowers\plans\phase3-agent-design.md)
+- [Phase 4 项目闭环设计](docs\superpowers\plans\phase4-closure-design.md)
+- [项目总结](docs\project-summary.md)
+
