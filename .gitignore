@@ -11,6 +11,7 @@ venv/
 # Cache and logs
 .cache/
 logs/
+.prompts/
 
 # Vector store data
 chroma_db/
