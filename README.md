@@ -15,33 +15,9 @@
 >
 > **详细演进记录：** [docs/project-summary.md](docs/project-summary.md) · **完整使用说明：** [USAGE.md](USAGE.md) · **设计文档：** [docs/](docs/superpowers/specs/)
 
-------
+# 
 
-# 目录
-
-- [1. 项目背景与目标](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#1-项目背景与目标)
-- [2. 项目核心能力](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#2-项目核心能力)
-- [3. 技术栈总览](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#3-技术栈总览)
-- [4. 系统整体架构](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#4-系统整体架构)
-- [5. 四阶段演进路线](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#5-四阶段演进路线)
-  - [5.1 Phase 1：最小可用 RAG 原型](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#51-phase-1最小可用-rag-原型)
-  - [5.2 Phase 2：检索优化与评测体系](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#52-phase-2检索优化与评测体系)
-  - [5.3 Phase 3：Agent 智能体与联网搜索](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#53-phase-3agent-智能体与联网搜索)
-  - [5.4 Phase 4：工程化闭环与服务化](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#54-phase-4工程化闭环与服务化)
-- [6. RAG 知识库设计详解](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#6-rag-知识库设计详解)
-- [7. 检索优化设计详解](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#7-检索优化设计详解)
-- [8. Agent 决策系统设计](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#8-agent-决策系统设计)
-- [9. 联网搜索与自由对话兜底](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#9-联网搜索与自由对话兜底)
-- [10. 缓存、日志与工程化能力](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#10-缓存日志与工程化能力)
-- [11. 评测体系与实验结果](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#11-评测体系与实验结果)
-- [12. 核心技术难点与解决方案](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#12-核心技术难点与解决方案)
-- [13. 项目结构说明](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#13-项目结构说明)
-- [14. 快速开始](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#14-快速开始)
-- [15. 使用方式](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#15-使用方式)
-- [16. 项目亮点总结](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#16-项目亮点总结)
-- [17. 后续可扩展方向](https://chatgpt.com/c/6a4a1ab5-80bc-83e8-b798-bbfd87193d54#18-后续可扩展方向)
-- 结语
-- 设计文档
+[toc]
 
 ------
 
