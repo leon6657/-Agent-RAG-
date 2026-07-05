@@ -13,16 +13,30 @@ def main():
     parser = argparse.ArgumentParser(description="RAG Knowledge Base")
     parser.add_argument("--ingest", action="store_true", help="Index .md files into vector store")
     parser.add_argument("--query", action="store_true", help="Interactive Q and A session")
-    parser.add_argument("--chat", action="store_true", help="Interactive Agent session with memory")
+    parser.add_argument("--tool", action="store_true", help="Tool calling agent with function calling")
+parser.add_argument("--chat", action="store_true", help="Interactive Agent session with memory")
     parser.add_argument("--serve", action="store_true", help="Start FastAPI web service")
 
     args = parser.parse_args()
 
-    if not any([args.ingest, args.query, args.chat, args.serve]):
+    if not any([args.ingest, args.query, args.chat, args.tool, args.serve]):
         parser.print_help()
         return
 
     os.environ.setdefault("HF_HOME", os.path.join(os.path.dirname(__file__), ".hf_cache"))
+
+    if args.tool:
+        from app.tool_agent import chat
+        print("Tool mode\n" + "-" * 40)
+        while True:
+            msg = input("\nYou: ").strip()
+            if not msg or msg.lower() == "exit":
+                if msg: print("Goodbye!")
+                break
+            print("\nAssistant: ", end="", flush=True)
+            print(chat(msg))
+            print()
+        return
 
     if args.serve:
         import uvicorn
