@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--ingest", action="store_true", help="Index .md files into vector store")
     parser.add_argument("--query", action="store_true", help="Interactive Q and A session")
     parser.add_argument("--tool", action="store_true", help="Tool calling agent with function calling")
-parser.add_argument("--chat", action="store_true", help="Interactive Agent session with memory")
+    parser.add_argument("--chat", action="store_true", help="Interactive Agent session with memory")
     parser.add_argument("--serve", action="store_true", help="Start FastAPI web service")
 
     args = parser.parse_args()

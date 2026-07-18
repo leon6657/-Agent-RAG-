@@ -6,18 +6,11 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 
 from app.config import config
+from app.prompt_manager import get
 
 
 def build_prompt() -> ChatPromptTemplate:
-    template = (
-        "You are a helpful assistant answering questions based on the provided context.\n\n"
-        "Context:\n{context}\n\n"
-        "---\n\n"
-        "Question: {question}\n\n"
-        "Answer the question based on the context above. "
-        "If the context doesn't contain enough information, say so clearly. "
-        "Answer in the same language as the question."
-    )
+    template = get("query")
     return ChatPromptTemplate.from_template(template)
 
 

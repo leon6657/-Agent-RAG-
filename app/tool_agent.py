@@ -7,10 +7,10 @@ from app.config import config
 from app.memory import SimpleMemory
 from app import tools
 
-_SYSTEM_PROMPT = """You are a helpful assistant with access to tools.
+_SYSTEM_PROMPT = """You are a helpful assistant with access to tools. / 你是一个可以使用工具的助手。
 
 When you need information from the user's notes, use search_knowledge_base.
-When asked about the current time, use get_current_time.
+When asked about the current time, use get_current_time. / 当被问及时间日期时，调用 get_current_time。
 For general conversation, answer directly.
 
 Always use the appropriate tool when needed."""

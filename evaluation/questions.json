@@ -118,5 +118,65 @@
     "q": "装饰器的@语法是如何工作的？",
     "a": "@\\u88c5\\u9970\\u5668",
     "s": "hello.md"
+  },
+  {
+    "id": "q21",
+    "q": "LLM训练包括哪些阶段",
+    "a": "预训练",
+    "s": "01-llm-basics.md"
+  },
+  {
+    "id": "q22",
+    "q": "Transformer的核心机制",
+    "a": "自注意力",
+    "s": "01-llm-basics.md"
+  },
+  {
+    "id": "q23",
+    "q": "RAG是什么的缩写",
+    "a": "检索增强生成",
+    "s": "02-what-is-rag.md"
+  },
+  {
+    "id": "q24",
+    "q": "RAG中检索器的作用",
+    "a": "向量数据库",
+    "s": "02-what-is-rag.md"
+  },
+  {
+    "id": "q25",
+    "q": "什么是ReAct模式",
+    "a": "ReAct",
+    "s": "03-agent-intro.md"
+  },
+  {
+    "id": "q26",
+    "q": "什么是智能体Agent",
+    "a": "智能体",
+    "s": "03-agent-intro.md"
+  },
+  {
+    "id": "q27",
+    "q": "文本嵌入的作用",
+    "a": "嵌入",
+    "s": "04-embedding-models.md"
+  },
+  {
+    "id": "q28",
+    "q": "语义相似度",
+    "a": "语义相似度",
+    "s": "04-embedding-models.md"
+  },
+  {
+    "id": "q29",
+    "q": "LCEL是什么",
+    "a": "LCEL",
+    "s": "05-langchain-basics.md"
+  },
+  {
+    "id": "q30",
+    "q": "LangChain的提示词模板",
+    "a": "提示词模板",
+    "s": "05-langchain-basics.md"
   }
 ]

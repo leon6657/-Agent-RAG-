@@ -33,7 +33,7 @@ def get_definitions():
             "type": "function",
             "function": {
                 "name": "get_current_time",
-                "description": "Get the current date and time",
+                "description": "Get the current date and time / 获取当前日期和时间",
                 "parameters": {"type": "object", "properties": {}, "required": []},
             },
         },
@@ -41,7 +41,7 @@ def get_definitions():
             "type": "function",
             "function": {
                 "name": "search_knowledge_base",
-                "description": "Search local notes",
+                "description": "Search local notes / 搜索本地笔记",
                 "parameters": {
                     "type": "object",
                     "properties": {

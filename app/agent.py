@@ -86,18 +86,31 @@ def _call_with_search(history: str, question: str, today: str) -> str:
         return _call_llm(_CHAT_PROMPT, {"history": history or "None", "question": question, "current_date": today})
 
 
+def _call_deepseek_direct(question: str, history: str) -> str:
+    from openai import OpenAI
+    client = OpenAI(api_key=config.deepseek_api_key, base_url=config.deepseek_api_base)
+    r = client.chat.completions.create(
+        model=config.deepseek_model,
+        messages=[{"role": "user", "content": question}],
+        temperature=0.3,
+        max_tokens=2048,
+        extra_body={"enable_search": True},
+    )
+    return r.choices[0].message.content
+
+
 def chat(message: str) -> str:
     today = date.today().isoformat()
     history = memory.get_history()
 
-    if _has_relevant(message):
-        context = _search_kb(message)
-        if context:
-            response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today})
-        else:
-            response = _call_with_search(history, message, today)
+    context = _search_kb(message)
+    if context:
+        if len(message) >= 4 and message[:4] not in context:
+            context = ''
+    if context:
+        response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today})
     else:
-        response = _call_with_search(history, message, today)
+        response = _call_deepseek_direct(message, history)
 
     memory.add_user(message)
     memory.add_assistant(response)
