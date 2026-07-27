@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "rag-kb"
@@ -11,8 +11,16 @@ dependencies = [
     "langchain-core>=0.3",
     "langchain-community>=0.3",
     "langchain-openai>=0.2",
-    "chromadb>=0.5",
     "sentence-transformers>=3.0",
     "python-dotenv>=1.0",
+    "numpy>=1.26",
+    "rank-bm25>=0.2",
+    "jieba>=0.42",
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "diskcache>=5.6",
+    "requests>=2.31",
+    "openai>=1.0",
+    "langgraph>=0.2",
     "pytest>=8.0",
 ]

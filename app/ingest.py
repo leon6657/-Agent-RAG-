@@ -23,8 +23,9 @@ _STATE_FILE = _PROJECT_ROOT / ".ingest_state.json"
 class MarkdownLoader(TextLoader):
     """支持Markdown文件的加载器，自动识别编码并提取元数据"""
 
-    def __init__(self, file_path: str):
-        super().__init__(file_path, encoding="utf-8")
+    def __init__(self, file_path: str, **kwargs):
+        kwargs.pop("encoding", None)
+        super().__init__(file_path, encoding="utf-8", **kwargs)
         self.file_path = file_path
 
     def load(self) -> List[Document]:
@@ -137,7 +138,7 @@ def _get_model_path() -> str:
             return str(latest)
 
     # 方法3：直接使用模型名称（会从HuggingFace下载）
-    print("⚠️  Local model not found, downloading from HuggingFace...")
+    print("[WARN] Local model not found, downloading from HuggingFace...")
     return "BAAI/bge-small-zh-v1.5"
 
 
@@ -224,9 +225,9 @@ def batch_embed_and_store(
 
     if clear_first:
         store.clear()
-        print("🗑️  Cleared existing vector store")
+        print("[INFO] Cleared existing vector store")
 
-    print(f"📊 Processing {total} chunks in batches of {batch_size}...")
+    print(f"[INFO] Processing {total} chunks in batches of {batch_size}...")
 
     for i in range(0, total, batch_size):
         batch = chunks[i:i + batch_size]
@@ -235,12 +236,12 @@ def batch_embed_and_store(
         try:
             vectors = embeddings.embed_documents(texts)
             store.add_documents(batch, vectors)
-            print(f"  ✅ Processed {min(i + batch_size, total)}/{total} chunks")
+            print(f"  [OK] Processed {min(i + batch_size, total)}/{total} chunks")
         except Exception as e:
-            print(f"  ❌ Failed at batch {i // batch_size + 1}: {e}")
+            print(f"  [ERROR] Failed at batch {i // batch_size + 1}: {e}")
             # 如果是第一批失败，清空操作需要回滚
             if i == 0 and clear_first:
-                print("⚠️  First batch failed, vector store may be empty")
+                print("[WARN] First batch failed, vector store may be empty")
             raise
 
 
@@ -256,7 +257,7 @@ def run_ingest(force_rebuild: bool = False) -> int:
     Returns:
         int: 处理的chunk数量
     """
-    print(f"📂 Loading documents from {config.data_dir}...")
+    print(f"[INFO] Loading documents from {config.data_dir}...")
 
     # 检测文件变化
     changed_files, deleted_files = get_files_to_process(config.data_dir)
@@ -266,25 +267,25 @@ def run_ingest(force_rebuild: bool = False) -> int:
     supports_delete = hasattr(store, 'delete_by_source')
 
     if deleted_files and not supports_delete:
-        print("⚠️  Store doesn't support delete_by_source, switching to full rebuild")
+        print("[WARN] Store doesn't support delete_by_source, switching to full rebuild")
         force_rebuild = True
     elif deleted_files and supports_delete:
         # 支持增量删除，处理删除的文件
-        print(f"🗑️  {len(deleted_files)} file(s) deleted, removing from index...")
+        print(f"[INFO] {len(deleted_files)} file(s) deleted, removing from index...")
         deleted_paths = [str(p) for p in deleted_files]
         removed = store.delete_by_sources(deleted_paths)
-        print(f"  ✅ Removed {removed} chunks")
+        print(f"  [OK] Removed {removed} chunks")
 
     # 如果没有变化且不强制重建，直接返回
     if not force_rebuild and not changed_files and not deleted_files:
-        print("✅ No changes detected, skipping ingest")
+        print("[OK] No changes detected, skipping ingest")
         try:
             return store.count()
         except:
             return 0
 
     if force_rebuild:
-        print("🔄 Force rebuild mode: processing all files")
+        print("[INFO] Force rebuild mode: processing all files")
         docs = load_markdown_files(config.data_dir)
     else:
         # 只加载发生变化的文件
@@ -292,20 +293,20 @@ def run_ingest(force_rebuild: bool = False) -> int:
         for file_path in changed_files:
             loader = MarkdownLoader(str(file_path))
             docs.extend(loader.load())
-        print(f"📄 {len(changed_files)} file(s) changed, loading...")
+        print(f"[INFO] {len(changed_files)} file(s) changed, loading...")
 
     if not docs:
-        print("📭 No documents to process")
+        print("[INFO] No documents to process")
         return 0
 
-    print(f"📄 Loaded {len(docs)} document(s)")
+    print(f"[INFO] Loaded {len(docs)} document(s)")
 
     # 分块
     chunks = split_documents(docs)
-    print(f"✂️  Split into {len(chunks)} chunk(s)")
+    print(f"[INFO] Split into {len(chunks)} chunk(s)")
 
     # 构建embeddings
-    print("🧮 Computing embeddings...")
+    print("[INFO] Computing embeddings...")
     emb = build_embeddings()
 
     # 分批嵌入并存储
@@ -337,7 +338,7 @@ def run_ingest(force_rebuild: bool = False) -> int:
             state["files"][rel_path] = compute_file_hash(file_path)
         save_ingest_state(state)
 
-    print(f"✅ Ingest completed! Total chunks: {len(chunks)}")
+    print(f"[OK] Ingest completed! Total chunks: {len(chunks)}")
     return len(chunks)
 
 

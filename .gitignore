@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv-conda/
 venv/
 *.egg-info/
 
@@ -37,3 +38,10 @@ Thumbs.db
 tmp/
 temp/
 *.txt
+!requirements.txt
+
+# .ingest_state.json
+echo ".ingest_state.json" >> .gitignore
+
+# docs/superpowers/new plans/
+echo "docs/superpowers/new plans/" >> .gitignore

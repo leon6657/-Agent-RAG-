@@ -28,8 +28,8 @@ async def health():
 
 @app.post("/query")
 async def query(req: QueryRequest):
-    from app.query import ask
-    return {"answer": ask(req.question)}
+    from app.query import ask_with_sources
+    return ask_with_sources(req.question)
 
 
 @app.post("/chat")

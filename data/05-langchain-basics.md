@@ -26,6 +26,14 @@ LangChain 是一个用于构建 LLM 应用的开源框架，提供了一套统�
 
 将多个组件串联起来形成可执行的流程。例如一个 RAG Chain 可能包含：Retriever → Prompt Template → LLM → Output Parser。
 
+### PromptTemplate（提示词模板）
+
+PromptTemplate 用来把固定提示词和变量填充结合起来。例如模板中可以包含 `{context}` 和 `{question}`，运行时再把检索到的上下文和用户问题填入模板。提示词模板让 RAG 链的输入格式更稳定，也便于复用和版本管理。
+
+### LCEL（LangChain Expression Language）
+
+LCEL 是 LangChain Expression Language 的缩写，是 LangChain 中用于链式组合组件的表达式语言。开发者可以用 `prompt | llm | parser` 这样的写法，把 PromptTemplate、LLM 和 Output Parser 串成可执行链。LCEL 让复杂调用流程更清晰，也方便后续替换组件或插入检索器。
+
 ### Tool（工具）
 
 Agent 可以调用的外部功能单元。LangChain 提供了丰富的内置 Tool，如计算器、搜索引擎、文档检索等，同时支持自定义 Tool。

@@ -1,44 +1,108 @@
-﻿"""Query interface: ask questions against the RAG knowledge base."""
+"""Query interface: ask questions against the RAG knowledge base."""
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from app import store
+from app.chain import build_llm
 from app.config import config
 from app.ingest import build_embeddings
-from app import store
 
 
-def _search(query: str) -> str:
+NO_CONTEXT_ANSWER = (
+    "\u77e5\u8bc6\u5e93\u4e2d\u6ca1\u6709\u627e\u5230\u8db3\u591f"
+    "\u53ef\u9760\u7684\u4f9d\u636e\u6765\u56de\u7b54\u8fd9\u4e2a"
+    "\u95ee\u9898\u3002\u5efa\u8bae\u5148\u8865\u5145\u76f8\u5173"
+    "\u8d44\u6599\uff0c\u6216\u6362\u4e00\u4e2a\u66f4\u8d34\u8fd1"
+    "\u5f53\u524d\u77e5\u8bc6\u5e93\u7684\u95ee\u9898\u3002"
+)
+
+
+def _retrieve_docs(query: str):
     if store.count() == 0:
         raise ValueError("Vector store is empty. Run 'python main.py --ingest' first.")
     emb = build_embeddings()
     vector = emb.embed_query(query)
-    docs = store.search(vector, k=config.retrieval_top_k)
+    return store.search_cached(vector, k=config.retrieval_top_k)
+
+
+def _format_context(docs) -> str:
     parts = []
-    for d in docs:
-        src = d.metadata.get("source", "?")
-        parts.append(f"[{src}]\n{d.page_content}")
+    for doc in docs:
+        source = doc.metadata.get("source", "?")
+        parts.append(f"[{source}]\n{doc.page_content}")
     return "\n\n".join(parts)
 
 
-def ask(question: str) -> str:
-    context = _search(question)
-    from app.chain import build_llm
+def _search(query: str) -> str:
+    return _format_context(_retrieve_docs(query))
+
+
+def _source_payload(docs) -> list[dict]:
+    sources = []
+    for doc in docs:
+        text = " ".join(doc.page_content.split())
+        sources.append(
+            {
+                "source": doc.metadata.get("source", doc.metadata.get("filename", "?")),
+                "filename": doc.metadata.get("filename", doc.metadata.get("source", "?")),
+                "score": doc.metadata.get("score", 0.0),
+                "preview": text[:180],
+            }
+        )
+    return sources
+
+
+def _top_score(docs) -> float:
+    if not docs:
+        return 0.0
+    return float(docs[0].metadata.get("score", 0.0))
+
+
+def ask_with_sources(question: str) -> dict:
+    docs = _retrieve_docs(question)
+    top_score = _top_score(docs)
+    sources = _source_payload(docs)
+
+    if top_score < config.rag_min_score:
+        return {
+            "answer": NO_CONTEXT_ANSWER,
+            "sources": sources,
+            "mode": "no_context",
+            "top_score": top_score,
+        }
+
+    context = _format_context(docs)
     prompt = ChatPromptTemplate.from_template(
-        "Based on the context below, answer the question.\n\n"
+        "You are a strict RAG assistant. Answer only from the Context below. "
+        "Do not invent facts that are not supported by the Context.\n\n"
         "Context:\n{context}\n\n"
         "Question: {question}\n\n"
         "Answer:"
     )
     chain = prompt | build_llm() | StrOutputParser()
-    return chain.invoke({"context": context, "question": question})
+    return {
+        "answer": chain.invoke({"context": context, "question": question}),
+        "sources": sources,
+        "mode": "rag",
+        "top_score": top_score,
+    }
+
+
+def ask(question: str) -> str:
+    return ask_with_sources(question)["answer"]
 
 
 def ask_stream(question: str):
-    context = _search(question)
-    from app.chain import build_llm
+    docs = _retrieve_docs(question)
+    if _top_score(docs) < config.rag_min_score:
+        yield NO_CONTEXT_ANSWER
+        return
+
+    context = _format_context(docs)
     prompt = ChatPromptTemplate.from_template(
-        "Based on the context below, answer the question.\n\n"
+        "You are a strict RAG assistant. Answer only from the Context below. "
+        "Do not invent facts that are not supported by the Context.\n\n"
         "Context:\n{context}\n\n"
         "Question: {question}\n\n"
         "Answer:"

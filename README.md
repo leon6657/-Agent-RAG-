@@ -1,5 +1,28 @@
 # RAG 知识库系统（四阶段演进版）
 
+## 项目速览
+
+这是一个面向 **LLM 应用工程 / RAG 后端方向** 的个人项目：用本地 Markdown 文档构建私有知识库，支持向量检索、混合检索、RAG 问答、Agent 兜底、FastAPI 服务化和 Recall@k 评测闭环。
+
+**当前可复现状态：**
+
+- 知识库：`data/` 下 11 篇 Markdown 文档，已索引 50 个 chunk
+- 向量库：本地 `vector_store.json`，使用 numpy 余弦相似度检索
+- Embedding：`BAAI/bge-small-zh-v1.5`
+- LLM：DeepSeek OpenAI-compatible API，默认模型 `deepseek-v4-flash`
+- 评测集：30 条 QA 样本
+- 当前评测：Baseline Recall@4 = 1.000，Optimized Recall@4 = 1.000；Optimized MRR = 0.944
+
+**亮点：**
+
+- 从 ChromaDB 迁移到 JSON + numpy 向量库，解决本地权限和依赖稳定性问题
+- 实现 Markdown 加载、语义分块、BGE 嵌入、向量检索、RAG 生成的完整链路
+- 支持 BM25 + dense hybrid retrieval、query rewrite、rerank，并用 Recall@k / MRR / Precision / SourceHit@k 做评测
+- 提供 FastAPI API、Web 聊天界面、Agent 模式、工具调用模式和评测 bad case 报告
+- 将 API key 从项目文件中剥离，提供 `.env.example` 和可复现依赖清单
+
+> 历史文档中保留了阶段演进记录；上方“当前可复现状态”以当前代码和本地评测结果为准。
+
 > 一个围绕 **文档知识库** 搭建的 **RAG + Agent 知识库智能问答系统**。
 > 项目从 **最小可用原型（Minimal RAG）** 起步，逐步演进到 **检索优化（Hybrid Retrieval）→ Agent 智能体（Agentic RAG）→ 工程化闭环（Production-ready Project）**，完整覆盖了从 **知识库构建、检索召回、LLM 问答、Agent 决策、联网搜索、缓存优化、评测体系、Web/API 服务化** 的全链路能力。
 >
@@ -1369,11 +1392,11 @@ curl -X POST http://localhost:8000/chat \
 
 # 16. 项目亮点总结
 
-如果只用一句话概括这个项目，我会说：
+用一句话概括这个项目：
 
 > **这不是一个“调用 LLM API 做个聊天机器人”的 Demo，而是一个完整走过“知识库构建 → 检索优化 → Agent 决策 → 工程化闭环”的 RAG 系统项目。**
 
-更具体地说，它的亮点包括：
+它的亮点包括：
 
 ------
 

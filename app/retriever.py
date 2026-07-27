@@ -1,7 +1,7 @@
 """Hybrid retriever: BM25 + vector search with weighted combination."""
 
 import json
-import os
+import re
 from pathlib import Path
 from typing import List, Tuple
 
@@ -13,14 +13,19 @@ from app import store
 _DATA_PATH = Path(__file__).resolve().parent.parent / "vector_store.json"
 _bm25 = None
 _all_texts = None
+_all_items = None
 
 
 def _load_all() -> Tuple[List[str], List[dict]]:
     """Load all stored texts and metadata."""
+    global _all_items
+    if _all_items is not None:
+        return [item["text"] for item in _all_items], _all_items
     if not _DATA_PATH.exists():
         return [], []
     with open(_DATA_PATH, "r", encoding="utf-8") as f:
         items = json.load(f)
+    _all_items = items
     texts = [item["text"] for item in items]
     return texts, items
 
@@ -36,10 +41,21 @@ def _get_bm25():
 
 
 def _tokenize(text: str) -> List[str]:
-    """Simple Chinese tokenizer: split on whitespace and punctuation."""
-    import re
-    tokens = re.findall(r"[\w\u4e00-\u9fff]+", text.lower())
-    return tokens
+    """Tokenize mixed Chinese/English text for BM25."""
+    text = text.lower()
+    try:
+        import jieba
+
+        tokens = [
+            token.strip()
+            for token in jieba.lcut(text)
+            if token.strip() and re.search(r"[\w\u4e00-\u9fff]", token)
+        ]
+    except ImportError:
+        tokens = re.findall(r"[\w\u4e00-\u9fff]+", text)
+
+    compact_terms = re.findall(r"[a-z0-9_]+|[\u4e00-\u9fff]{2,}", text)
+    return list(dict.fromkeys(tokens + compact_terms))
 
 
 def search_bm25(query: str, k: int = 10) -> List[Tuple[str, float]]:
@@ -62,6 +78,8 @@ def search_hybrid(query: str, query_vector: List[float], k: int = 4,
     alpha: weight for BM25 score (1-alpha for vector score).
     Returns top-k documents with combined scores in metadata.
     """
+    _, all_items = _load_all()
+
     # Get BM25 results
     bm25_results = search_bm25(query, k=k * 3)
     bm25_dict = {t: s for t, s in bm25_results}
@@ -75,7 +93,6 @@ def search_hybrid(query: str, query_vector: List[float], k: int = 4,
     q = q / np.linalg.norm(q)
     vec_scores = {}
     for doc in vec_docs:
-        all_items = json.loads(open(_DATA_PATH, "r", encoding="utf-8").read())
         for item in all_items:
             if item["text"] == doc.page_content:
                 v = np.array(item["embedding"])
@@ -112,7 +129,7 @@ def search_hybrid(query: str, query_vector: List[float], k: int = 4,
     result_docs = []
     for text, score in sorted_results:
         meta = {}
-        for item in json.loads(open(_DATA_PATH, "r", encoding="utf-8").read()):
+        for item in all_items:
             if item["text"] == text:
                 meta = item.get("metadata", {})
                 break
@@ -125,6 +142,7 @@ def search_hybrid(query: str, query_vector: List[float], k: int = 4,
 
 def reset():
     """Clear BM25 cache (call after re-ingesting)."""
-    global _bm25, _all_texts
+    global _bm25, _all_texts, _all_items
     _bm25 = None
     _all_texts = None
+    _all_items = None

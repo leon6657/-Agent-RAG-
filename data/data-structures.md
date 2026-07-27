@@ -41,6 +41,8 @@ student.keys()           # 所有键
 student.values()         # 所有值
 ```
 
+`dict.get(key, default)` 用于安全访问字典中的键：如果 `key` 存在，返回对应值；如果不存在，返回 `default`，避免直接用 `dict[key]` 时触发 `KeyError`。
+
 ## 集合（Set）
 
 集合是无序的不重复元素集，支持数学集合运算：

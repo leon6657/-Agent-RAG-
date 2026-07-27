@@ -1,182 +1,182 @@
 [
   {
     "id": "q01",
-    "q": "Python中如何定义函数？",
-    "a": "def\\u5173\\u952e\\u5b57",
+    "q": "Python 中如何定义函数？",
+    "a": ["def 关键字", "def", "定义函数"],
     "s": "python-basics.md"
   },
   {
     "id": "q02",
-    "q": "函数的*args和**kwargs有什么区别？",
-    "a": "*args",
+    "q": "*args 和 **kwargs 有什么区别？",
+    "a": ["*args", "**kwargs", "可变数量的位置参数"],
     "s": "python-basics.md"
   },
   {
     "id": "q03",
-    "q": "Python函数的默认参数怎么用？",
-    "a": "\\u9ed8\\u8ba4\\u53c2\\u6570",
+    "q": "Python 函数的默认参数怎么用？",
+    "a": ["默认参数", "greeting=\"Hello\"", "参数可以设置默认值"],
     "s": "python-basics.md"
   },
   {
     "id": "q04",
     "q": "函数内部如何修改全局变量？",
-    "a": "global",
+    "a": ["global", "全局变量"],
     "s": "python-basics.md"
   },
   {
     "id": "q05",
-    "q": "Python类的__init__方法的作用是什么？",
-    "a": "__init__",
+    "q": "Python 类的 __init__ 方法的作用是什么？",
+    "a": ["__init__", "构造方法", "初始化对象"],
     "s": "python-oop.md"
   },
   {
     "id": "q06",
     "q": "子类如何继承父类？",
-    "a": "\\u7ee7\\u627f",
+    "a": ["继承", "class Dog(Animal)", "父类"],
     "s": "python-oop.md"
   },
   {
     "id": "q07",
-    "q": "Python魔术方法的特征是什么？",
-    "a": "\\u9b54\\u672f\\u65b9\\u6cd5",
+    "q": "Python 魔术方法的特征是什么？",
+    "a": ["魔术方法", "__str__", "双下划线"],
     "s": "python-oop.md"
   },
   {
     "id": "q08",
-    "q": "classmethod和staticmethod的区别？",
-    "a": "classmethod",
+    "q": "classmethod 和 staticmethod 的区别是什么？",
+    "a": ["classmethod", "staticmethod", "类方法"],
     "s": "python-oop.md"
   },
   {
     "id": "q09",
-    "q": "列表和元组的根本区别？",
-    "a": "\\u5217\\u8868\\u53ef\\u53d8",
+    "q": "列表和元组的根本区别是什么？",
+    "a": ["列表可变", "元组不可变", "list", "tuple"],
     "s": "data-structures.md"
   },
   {
     "id": "q10",
     "q": "列表推导式的语法是什么？",
-    "a": "\\u5217\\u8868\\u63a8\\u5bfc\\u5f0f",
+    "a": ["列表推导式", "[x * x for x in nums]", "for x in nums"],
     "s": "data-structures.md"
   },
   {
     "id": "q11",
-    "q": "dict.get(key, default)的作用？",
-    "a": "dict.get",
+    "q": "dict.get(key, default) 的作用是什么？",
+    "a": ["dict.get", "default", "避免 KeyError"],
     "s": "data-structures.md"
   },
   {
     "id": "q12",
-    "q": "Python集合支持哪些运算？",
-    "a": "\\u96c6\\u5408",
+    "q": "Python 集合支持哪些运算？",
+    "a": ["集合", "交集", "并集", "差集"],
     "s": "data-structures.md"
   },
   {
     "id": "q13",
-    "q": "监督学习和无监督学习的核心区别？",
-    "a": "\\u76d1\\u7763\\u5b66\\u4e60",
+    "q": "监督学习和无监督学习的核心区别是什么？",
+    "a": ["监督学习", "无监督学习", "标签"],
     "s": "ml-basics.md"
   },
   {
     "id": "q14",
-    "q": "训练集、验证集、测试集各自用途？",
-    "a": "\\u8bad\\u7ec3\\u96c6",
+    "q": "训练集、验证集、测试集各自用途是什么？",
+    "a": ["训练集", "验证集", "测试集"],
     "s": "ml-basics.md"
   },
   {
     "id": "q15",
     "q": "什么是过拟合？怎么解决？",
-    "a": "\\u8fc7\\u62df\\u5408",
+    "a": ["过拟合", "正则化", "增加数据"],
     "s": "ml-basics.md"
   },
   {
     "id": "q16",
     "q": "什么是欠拟合？怎么解决？",
-    "a": "\\u6b20\\u62df\\u5408",
+    "a": ["欠拟合", "增加模型复杂度", "特征不足"],
     "s": "ml-basics.md"
   },
   {
     "id": "q17",
     "q": "特征工程包括哪些操作？",
-    "a": "\\u7279\\u5f81\\u5de5\\u7a0b",
+    "a": ["特征工程", "缺失值处理", "标准化", "归一化"],
     "s": "ml-basics.md"
   },
   {
     "id": "q18",
-    "q": "K-Means属于哪类学习算法？",
-    "a": "K-Means",
+    "q": "K-Means 属于哪类学习算法？",
+    "a": ["K-Means", "无监督学习", "聚类"],
     "s": "ml-basics.md"
   },
   {
     "id": "q19",
-    "q": "Python中nonlocal关键字的用途？",
-    "a": "nonlocal",
+    "q": "Python 中 nonlocal 关键字的用途是什么？",
+    "a": ["nonlocal", "外层函数", "嵌套函数"],
     "s": "python-basics.md"
   },
   {
     "id": "q20",
-    "q": "装饰器的@语法是如何工作的？",
-    "a": "@\\u88c5\\u9970\\u5668",
+    "q": "装饰器的 @ 语法是如何工作的？",
+    "a": ["@decorator", "decorator", "wrapper"],
     "s": "hello.md"
   },
   {
     "id": "q21",
-    "q": "LLM训练包括哪些阶段",
-    "a": "预训练",
+    "q": "LLM 训练包括哪些阶段？",
+    "a": ["预训练", "监督微调", "RLHF", "训练阶段"],
     "s": "01-llm-basics.md"
   },
   {
     "id": "q22",
-    "q": "Transformer的核心机制",
-    "a": "自注意力",
+    "q": "Transformer 的核心机制是什么？",
+    "a": ["自注意力", "Attention", "Transformer"],
     "s": "01-llm-basics.md"
   },
   {
     "id": "q23",
-    "q": "RAG是什么的缩写",
-    "a": "检索增强生成",
+    "q": "RAG 是什么的缩写？",
+    "a": ["Retrieval-Augmented Generation", "检索增强生成", "RAG"],
     "s": "02-what-is-rag.md"
   },
   {
     "id": "q24",
-    "q": "RAG中检索器的作用",
-    "a": "向量数据库",
+    "q": "RAG 中检索器的作用是什么？",
+    "a": ["检索器", "向量数据库", "相关文档片段"],
     "s": "02-what-is-rag.md"
   },
   {
     "id": "q25",
-    "q": "什么是ReAct模式",
-    "a": "ReAct",
+    "q": "什么是 ReAct 模式？",
+    "a": ["ReAct", "Reasoning", "Acting"],
     "s": "03-agent-intro.md"
   },
   {
     "id": "q26",
-    "q": "什么是智能体Agent",
-    "a": "智能体",
+    "q": "什么是智能体 Agent？",
+    "a": ["Agent", "智能体", "使用工具"],
     "s": "03-agent-intro.md"
   },
   {
     "id": "q27",
-    "q": "文本嵌入的作用",
-    "a": "嵌入",
+    "q": "文本嵌入的作用是什么？",
+    "a": ["文本嵌入", "固定长度", "浮点数向量"],
     "s": "04-embedding-models.md"
   },
   {
     "id": "q28",
-    "q": "语义相似度",
-    "a": "语义相似度",
+    "q": "语义相似度表示什么？",
+    "a": ["语义相似", "向量空间", "距离相近"],
     "s": "04-embedding-models.md"
   },
   {
     "id": "q29",
-    "q": "LCEL是什么",
-    "a": "LCEL",
+    "q": "LCEL 是什么？",
+    "a": ["LCEL", "LangChain Expression Language", "链式组合"],
     "s": "05-langchain-basics.md"
   },
   {
     "id": "q30",
-    "q": "LangChain的提示词模板",
-    "a": "提示词模板",
+    "q": "LangChain 的提示词模板有什么作用？",
+    "a": ["PromptTemplate", "提示词模板", "变量填充"],
     "s": "05-langchain-basics.md"
   }
 ]

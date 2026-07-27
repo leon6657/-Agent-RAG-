@@ -8,23 +8,25 @@
 
 ```bash
 # 1. 进入项目目录
-cd E:\AGitHub-project\RAG搭建
+cd E:\AGitHub-project\RAG-project
 
-# 2. 激活虚拟环境（每次新开终端都要做）
-.venv\Scripts\activate
+# 2. 使用当前 Conda 环境里的 Python
+.\.venv-conda\python.exe --version
 
 # 3. 配置 API Key
-#    编辑 .env 文件，填入你的 DeepSeek API Key
+#    复制 .env.example 为 .env，然后填入你的 DeepSeek API Key
 #    获取地址：https://platform.deepseek.com
 #    DEEPSEEK_API_KEY=sk-your-key-here
+#    DEEPSEEK_MODEL=deepseek-v4-flash
+#    RAG_MIN_SCORE=0.35
 
 # 4. 建库（首次使用或添加新笔记后需要）
-python main.py --ingest
+.\.venv-conda\python.exe main.py --ingest
 
 # 5. 选择使用方式
-python main.py --query      # 严格 RAG（仅笔记）
-python main.py --chat       # Agent（笔记+联网+聊天）
-python main.py --serve      # Web 服务（推荐）
+.\.venv-conda\python.exe main.py --query      # 严格 RAG（仅笔记）
+.\.venv-conda\python.exe main.py --chat       # Agent（笔记+联网+聊天）
+.\.venv-conda\python.exe main.py --serve      # Web 服务（推荐）
 ```
 
 ---
@@ -44,8 +46,7 @@ python main.py --serve      # Web 服务（推荐）
 ### 3.1 启动
 
 ```bash
-.venv\Scripts\activate
-python main.py --serve
+.\.venv-conda\python.exe main.py --serve
 ```
 
 看到以下输出说明启动成功：
@@ -95,7 +96,7 @@ curl -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
   -d "{\"question\":\"Python装饰器是什么\"}"
 
-# 返回：{"answer": "根据笔记内容..."}
+# 返回：{"answer": "...", "sources": [...], "mode": "rag", "top_score": 0.82}
 ```
 
 **Agent 聊天：**
@@ -171,7 +172,7 @@ python main.py --ingest
 | 只是问问题 | ❌ 不需要 |
 | 重启电脑后 | ❌ 不需要 |
 
-当前库里已有 **43 个片段**，来自 11 篇笔记。
+当前库里已有 **50 个片段**，来自 11 篇笔记。
 
 **笔记格式要求：**
 - 只支持 `.md` 文件
@@ -190,14 +191,29 @@ python evaluation/runner.py
 输出示例：
 ```
 BASELINE (Vector Only):
-    Recall@4:   0.350
-    MRR:        0.310
-OPTIMIZED (Hybrid):
-    Recall@4:   0.575
-    MRR:        0.572
+    Questions:      30
+    Recall@4:       1.000
+    MRR:            0.928
+    Precision@4:    0.250
+    SourceHit@4:    1.000
+
+OPTIMIZED (Full Phase 2):
+    Questions:      30
+    Recall@4:       1.000
+    MRR:            0.944
+    Precision@4:    0.250
+    SourceHit@4:    1.000
 ```
 
-评测集：20 个 QA 对，覆盖笔记各章节。
+评测集：30 个 QA 对，覆盖笔记各章节。
+
+评测运行后会生成详细报告：
+
+```bash
+evaluation/reports/latest.md
+```
+
+报告中包含 baseline / optimized 的聚合指标，以及每种检索方式的 miss case，方便做 bad case 分析。
 
 ---
 
