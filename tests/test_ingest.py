@@ -31,3 +31,29 @@ def test_split_documents_creates_chunks():
     chunks = split_documents(docs)
     assert len(chunks) > 1
     assert all("source" in c.metadata for c in chunks)
+
+
+def test_batch_embed_and_store_preserves_all_batches_for_same_source(tmp_path, monkeypatch):
+    from langchain_core.documents import Document
+
+    from app import store
+    from app.ingest import batch_embed_and_store
+
+    monkeypatch.setattr(store, "_DATA_PATH", tmp_path / "vector_store.json")
+    store.invalidate_cache()
+
+    docs = [
+        Document(
+            page_content=f"chunk {i}",
+            metadata={"source": "data/long-demo.md", "chunk_id": f"chunk-{i}"},
+        )
+        for i in range(5)
+    ]
+
+    class FakeEmbeddings:
+        def embed_documents(self, texts):
+            return [[float(i + 1), 0.0] for i, _ in enumerate(texts)]
+
+    batch_embed_and_store(docs, FakeEmbeddings(), batch_size=2, clear_first=True)
+
+    assert store.count() == 5

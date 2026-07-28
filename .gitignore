@@ -40,8 +40,5 @@ temp/
 *.txt
 !requirements.txt
 
-# .ingest_state.json
-echo ".ingest_state.json" >> .gitignore
-
-# docs/superpowers/new plans/
-echo "docs/superpowers/new plans/" >> .gitignore
+.ingest_state.json
+docs/superpowers/new plans/

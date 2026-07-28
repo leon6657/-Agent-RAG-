@@ -1,178 +1,713 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAG 知识库</title>
+<title>RAG Workbench</title>
 <style>
+:root{
+  --bg:#f6f7f9;--panel:#fff;--soft:#f9fafb;--line:#e5e7eb;--text:#111827;
+  --muted:#6b7280;--subtle:#9ca3af;--blue:#2563eb;--blue-soft:#eff6ff;
+  --green:#16803c;--green-soft:#ecfdf3;--amber:#a16207;--amber-soft:#fffbeb;
+  --red:#b42318;--red-soft:#fef3f2;--shadow:0 14px 34px rgba(15,23,42,.08);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#f5f5f7;height:100vh;display:flex;flex-direction:column}
-header{padding:16px 20px 12px;background:#fff;border-bottom:1px solid #e5e5ea}
-h1{font-size:17px;font-weight:600;color:#1d1d1f;margin-bottom:2px}
-.sub{font-size:12px;color:#86868b}
-#messages{flex:1;overflow-y:auto;padding:16px 20px 8px;display:flex;flex-direction:column;gap:12px}
-.msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg.user{background:#0071e3;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-.msg.assistant{background:#fff;color:#1d1d1f;align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.msg.time{font-size:11px;color:#86868b;align-self:center;background:transparent;box-shadow:none;padding:4px 0}
-.sources{margin-top:10px;padding-top:8px;border-top:1px solid #e5e5ea;white-space:normal}
-.source-head{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px;color:#515154}
-.source-pill{font-size:11px;color:#1d1d1f;background:#f2f2f7;border-radius:999px;padding:2px 7px}
-.source-item{padding:7px 0;border-top:1px solid #f2f2f7}
-.source-item:first-of-type{border-top:0}
-.source-title{display:flex;justify-content:space-between;gap:12px;font-size:12px;font-weight:600;color:#1d1d1f}
-.source-score{font-weight:500;color:#86868b;white-space:nowrap}
-.source-preview{margin-top:3px;font-size:12px;line-height:1.45;color:#515154}
-.typing{color:#86868b;font-size:13px;align-self:flex-start;padding:4px 0;display:none}
-.typing.show{display:block}
-#input-area{padding:8px 20px 16px;background:#fff;border-top:1px solid #e5e5ea}
-.mode-bar{display:flex;gap:12px;align-items:center;margin-bottom:8px}
-.mode-bar label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer;color:#515154}
-.mode-bar input[type=radio]{accent-color:#0071e3}
-.bottom-row{display:flex;gap:8px;align-items:flex-end}
-textarea{flex:1;padding:8px 12px;border:1px solid #d2d2d7;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;min-height:40px;max-height:120px;line-height:1.4}
-textarea:focus{border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,.12)}
-.btn{background:#0071e3;color:#fff;border:none;border-radius:20px;padding:8px 20px;font-size:14px;cursor:pointer;white-space:nowrap;height:40px}
-.btn:hover{background:#0077ed}
-.btn:disabled{opacity:.4;cursor:default}
+body{min-height:100vh;overflow:auto;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+button,textarea{font:inherit}
+button{border:0;cursor:pointer}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:280px minmax(420px,1fr) 360px;grid-template-rows:clamp(620px,calc(100vh - 140px),calc(100vh - 32px)) auto;gap:16px;padding:16px}
+.panel{min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+.control-panel,.chat-panel,.evidence-panel{height:clamp(620px,calc(100vh - 140px),calc(100vh - 32px));min-height:620px;max-height:calc(100vh - 32px)}
+.control-panel{display:flex;flex-direction:column;gap:16px;padding:16px;overflow:auto}
+.brand{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.brand h1{font-size:20px;font-weight:750;letter-spacing:0}
+.brand p{margin-top:5px;font-size:13px;line-height:1.45;color:var(--muted)}
+.section{display:flex;flex-direction:column;gap:10px}
+.section-title{font-size:12px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
+.mode-btn{height:36px;border-radius:6px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
+.mode-btn.active{background:var(--blue);color:#fff}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
+.metric .label{font-size:11px;color:var(--muted)}
+.metric .value{margin-top:3px;font-size:18px;font-weight:780}
+.example-list{display:flex;flex-direction:column;gap:8px}
+.example-btn{text-align:left;padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:13px;line-height:1.45}
+.example-btn:hover{border-color:#bfdbfe;background:var(--blue-soft)}
+.hint{margin-top:auto;padding:12px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:12px;line-height:1.5}
+.chat-panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
+.chat-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.chat-title h2{font-size:16px;font-weight:780}
+.chat-title p{margin-top:3px;color:var(--muted);font-size:12px}
+.status-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.status-pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:700;white-space:nowrap}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--subtle)}
+.status-pill.good{background:var(--green-soft);border-color:#bbf7d0;color:var(--green)}
+.status-pill.good .status-dot{background:var(--green)}
+.status-pill.warn{background:var(--amber-soft);border-color:#fde68a;color:var(--amber)}
+.status-pill.warn .status-dot{background:var(--amber)}
+.status-pill.bad{background:var(--red-soft);border-color:#fecaca;color:var(--red)}
+.status-pill.bad .status-dot{background:var(--red)}
+.messages{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:18px;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%)}
+.empty-state{max-width:520px;margin:auto;text-align:center;color:var(--muted)}
+.empty-state h3{margin-bottom:8px;color:var(--text);font-size:22px}
+.empty-state p{font-size:14px;line-height:1.6}
+.message{display:flex;flex-direction:column;gap:6px;max-width:min(760px,86%)}
+.message.user{align-self:flex-end;align-items:flex-end}
+.message.assistant{align-self:flex-start}
+.bubble{min-width:96px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);font-size:14px;line-height:1.68;white-space:pre-wrap;word-break:break-word}
+.user .bubble{background:var(--blue);border-color:var(--blue);color:#fff}
+.answer-content{white-space:normal}
+.answer-content p{margin:0 0 10px}
+.answer-content p:last-child{margin-bottom:0}
+.answer-content strong{font-weight:780;color:#0f172a}
+.answer-content code{padding:2px 5px;border-radius:5px;background:#f1f5f9;color:#0f172a;font-family:"Consolas","SFMono-Regular",monospace;font-size:.92em}
+.answer-content pre{overflow:auto;margin:10px 0;padding:12px;border-radius:8px;background:#0f172a;color:#e5e7eb}
+.answer-content pre code{padding:0;background:transparent;color:inherit}
+.answer-content ul,.answer-content ol{margin:8px 0 10px 20px}
+.answer-content li{margin:4px 0}
+.answer-content table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.answer-content th,.answer-content td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+.answer-content th{background:var(--soft);font-weight:750}
+.assistant.streaming .bubble::after{content:"";display:inline-block;width:7px;height:15px;margin-left:3px;background:var(--blue);vertical-align:-2px;animation:blink 1s steps(2,start) infinite}
+@keyframes blink{50%{opacity:0}}
+.message-meta{display:flex;align-items:center;gap:8px;color:var(--subtle);font-size:11px}
+.composer{padding:14px 18px;border-top:1px solid var(--line);background:#fff}
+.composer-box{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+textarea{width:100%;min-height:44px;max-height:150px;resize:none;outline:none;border:1px solid #d1d5db;border-radius:8px;padding:11px 12px;background:#fff;color:var(--text);line-height:1.45}
+textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.send-btn{height:44px;min-width:88px;border-radius:8px;background:var(--blue);color:#fff;font-weight:750}
+.send-btn:hover{background:#1d4ed8}
+.send-btn:disabled{opacity:.45;cursor:default}
+.evidence-panel{display:grid;grid-template-rows:auto auto 1fr;overflow:hidden}
+.evidence-header{padding:16px;border-bottom:1px solid var(--line)}
+.evidence-header h2{font-size:16px;font-weight:780}
+.evidence-header p{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.45}
+.trust-card{margin:16px;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--soft)}
+.trust-label{color:var(--muted);font-size:12px;font-weight:750}
+.trust-state{margin-top:6px;font-size:18px;font-weight:800}
+.trust-detail{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+.source-list{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:0 16px 16px}
+.source-empty{padding:18px;border:1px dashed #d1d5db;border-radius:8px;background:#fff;color:var(--muted);font-size:13px;line-height:1.55}
+.source-card{padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.source-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.source-name{color:var(--text);font-size:13px;font-weight:780;word-break:break-word}
+.source-score{padding:3px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:780;white-space:nowrap}
+.source-preview{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.55}
+.error-text{color:var(--red)}
+.monitor-panel{grid-column:1 / -1;padding:16px}
+.monitor-panel.collapsed{padding:12px 16px}
+.monitor-panel.collapsed .monitor-header{margin-bottom:0}
+.monitor-panel.collapsed .monitor-grid{display:none}
+.monitor-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.monitor-header h2{font-size:16px;font-weight:780}
+.monitor-header p{margin-top:4px;color:var(--muted);font-size:12px}
+.monitor-actions{display:flex;gap:8px;flex-wrap:wrap}
+.small-btn{height:34px;padding:0 12px;border-radius:8px;background:var(--soft);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:750}
+.small-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.monitor-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+.monitor-card{height:260px;display:grid;grid-template-rows:auto minmax(0,1fr);padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--soft);overflow:hidden}
+.monitor-card h3{margin-bottom:10px;font-size:13px;font-weight:780}
+.monitor-scroll{height:100%;max-height:none;overflow:auto;padding:10px;border-radius:8px;background:#fff;border:1px solid var(--line);font-size:12px;line-height:1.55;white-space:pre-wrap}
+.file-list,.history-list,.config-list{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.list-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12px}
+.list-row button{color:var(--blue);background:transparent;font-weight:750}
+.muted{color:var(--muted)}
+@media (max-width:1100px){
+  body{height:auto;overflow:auto}
+  .app-shell{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:auto auto auto auto}
+  .control-panel,.chat-panel,.evidence-panel{height:auto;max-height:none}
+  .control-panel{order:1}.chat-panel{order:2;min-height:680px}.evidence-panel{order:3;min-height:420px}
+  .monitor-panel{order:4}
+  .monitor-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .app-shell{padding:10px;gap:10px}
+  .chat-header{align-items:flex-start;flex-direction:column}
+  .status-row{justify-content:flex-start}
+  .message{max-width:96%}
+  .composer-box{grid-template-columns:1fr}
+  .send-btn{width:100%}
+}
 </style>
 </head>
 <body>
+<main class="app-shell">
+  <aside class="panel control-panel" id="controlPanel">
+    <div class="brand">
+      <h1>RAG Workbench</h1>
+      <p>&#38754;&#21521;&#21487;&#20449;&#38382;&#31572;&#30340;&#30693;&#35782;&#24211;&#25511;&#21046;&#21488;&#65292;&#23637;&#31034;&#26469;&#28304;&#12289;&#32622;&#20449;&#24230;&#19982;&#27969;&#24335;&#22238;&#31572;&#12290;</p>
+    </div>
+    <section class="section">
+      <div class="section-title">Mode</div>
+      <div class="mode-switch" role="group" aria-label="answer mode">
+        <button class="mode-btn active" data-mode="query" type="button">&#20005;&#26684; RAG</button>
+        <button class="mode-btn" data-mode="chat" type="button">Agent</button>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-title">Evaluation</div>
+      <div class="metric-grid">
+        <div class="metric"><div class="label">Recall@4</div><div class="value">1.000</div></div>
+        <div class="metric"><div class="label">MRR</div><div class="value">0.944</div></div>
+        <div class="metric"><div class="label">SourceHit@4</div><div class="value">1.000</div></div>
+        <div class="metric"><div class="label">Chunks</div><div class="value">50</div></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-title">Examples</div>
+      <div class="example-list">
+        <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">dict.get(key, default) &#30340;&#20316;&#29992;</button>
+        <button class="example-btn" data-question="LCEL 是什么？" type="button">LCEL &#26159;&#20160;&#20040;</button>
+        <button class="example-btn" data-question="RAG 中检索器的作用是什么？" type="button">RAG &#26816;&#32034;&#22120;</button>
+        <button class="example-btn" data-question="这个知识库里有没有部署到云服务器的步骤？" type="button">&#27979;&#35797;&#20302;&#32622;&#20449;&#25298;&#31572;</button>
+      </div>
+    </section>
+    <div class="hint">&#20005;&#26684; RAG &#21644; Agent &#37117;&#20250;&#27969;&#24335;&#36755;&#20986;&#12290;&#21491;&#20391;&#20250;&#23637;&#31034;&#26469;&#28304;&#12289;&#27169;&#24335;&#21644;&#32622;&#20449;&#29366;&#24577;&#12290;</div>
+  </aside>
 
-<header>
-<h1>RAG 知识库</h1>
-<div class="sub">基于笔记的问答 / Agent 聊天 / 联网搜索</div>
-</header>
+  <section class="panel chat-panel" id="chatPanel">
+    <header class="chat-header">
+      <div class="chat-title">
+        <h2>Knowledge Chat</h2>
+        <p id="modeDescription">&#22522;&#20110;&#26412;&#22320; Markdown &#30693;&#35782;&#24211;&#30340;&#27969;&#24335;&#22238;&#31572;&#12290;</p>
+      </div>
+      <div class="status-row">
+        <div class="status-pill" id="modeState"><span class="status-dot"></span><span>&#20005;&#26684; RAG</span></div>
+        <div class="status-pill" id="scoreState"><span class="status-dot"></span><span>top score: n/a</span></div>
+      </div>
+    </header>
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        <h3>&#20174;&#19968;&#20010;&#38382;&#39064;&#24320;&#22987;</h3>
+        <p>&#36873;&#25321;&#24038;&#20391;&#31034;&#20363;&#65292;&#25110;&#36755;&#20837;&#20320;&#33258;&#24049;&#30340;&#38382;&#39064;&#12290;&#22238;&#31572;&#29983;&#25104;&#26102;&#20250;&#36880;&#27493;&#26174;&#31034;&#65292;&#35777;&#25454;&#38754;&#26495;&#20250;&#21516;&#27493;&#21047;&#26032;&#12290;</p>
+      </div>
+    </div>
+    <footer class="composer">
+      <div class="composer-box">
+        <textarea id="input" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+        <button class="send-btn" id="sendBtn" type="button">&#21457;&#36865;</button>
+      </div>
+    </footer>
+  </section>
 
-<div id="messages">
-<div class="typing" id="typing">正在回答...</div>
-</div>
+  <aside class="panel evidence-panel" id="evidencePanel">
+    <header class="evidence-header">
+      <h2>&#35777;&#25454;</h2>
+      <p>&#24403;&#21069;&#22238;&#31572;&#30340;&#26469;&#28304;&#12289;&#30456;&#20284;&#24230;&#20998;&#25968;&#21644;&#21487;&#20449;&#29366;&#24577;&#12290;</p>
+    </header>
+    <section class="trust-card">
+      <div class="trust-label">&#21487;&#20449;&#29366;&#24577;</div>
+      <div class="trust-state" id="trustState">&#31561;&#24453;&#38382;&#39064;</div>
+      <div class="trust-detail" id="trustDetail">&#21457;&#36865;&#38382;&#39064;&#21518;&#65292;&#36825;&#37324;&#20250;&#26174;&#31034;&#26816;&#32034;&#32622;&#20449;&#24230;&#21644;&#22238;&#31572;&#27169;&#24335;&#12290;</div>
+    </section>
+    <div class="source-list" id="sourceList">
+      <div class="source-empty">&#26242;&#26080;&#35777;&#25454;&#12290;&#22238;&#31572;&#21518;&#20250;&#26174;&#31034;&#26368;&#22810;&#22235;&#20010;&#26469;&#28304;&#29255;&#27573;&#12290;</div>
+    </div>
+  </aside>
 
-<div id="input-area">
-<div class="mode-bar">
-<label><input type="radio" name="mode" value="query" checked> 严格 RAG</label>
-<label><input type="radio" name="mode" value="chat"> Agent 模式</label>
-</div>
-<div class="bottom-row">
-<textarea id="input" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
-<button class="btn" id="sendBtn">发送</button>
-</div>
-</div>
+  <section class="panel monitor-panel collapsed" id="monitorPanel">
+    <div class="monitor-header">
+      <div>
+        <h2>&#30417;&#25511; / Admin</h2>
+        <p>&#35780;&#27979;&#25253;&#21578;&#12289;&#30693;&#35782;&#24211;&#25991;&#20214;&#12289;&#26368;&#36817;&#26085;&#24535;&#12289;&#21482;&#35835;&#37197;&#32622;&#21644;&#26412;&#22320;&#21382;&#21490;&#12290;</p>
+      </div>
+      <div class="monitor-actions">
+        <button class="small-btn" id="toggleMonitorBtn" type="button">&#23637;&#24320;&#30417;&#25511;</button>
+        <button class="small-btn" id="refreshMonitorBtn" type="button">&#21047;&#26032;&#30417;&#25511;</button>
+        <button class="small-btn primary" id="rebuildBtn" type="button">&#37325;&#26032;&#24314;&#24211;</button>
+      </div>
+    </div>
+    <div class="monitor-grid">
+      <article class="monitor-card">
+        <h3>&#35780;&#27979;&#25253;&#21578;</h3>
+        <div class="monitor-scroll" id="reportView">&#31561;&#24453;&#21152;&#36733;&#12290;</div>
+      </article>
+      <article class="monitor-card">
+        <h3>&#30693;&#35782;&#24211;&#25991;&#20214;</h3>
+        <div class="file-list" id="kbFileList"></div>
+      </article>
+      <article class="monitor-card">
+        <h3>&#21482;&#35835;&#37197;&#32622;</h3>
+        <div class="config-list" id="configView"></div>
+      </article>
+      <article class="monitor-card">
+        <h3>&#26368;&#36817;&#26085;&#24535;</h3>
+        <div class="monitor-scroll" id="logView">&#31561;&#24453;&#21152;&#36733;&#12290;</div>
+      </article>
+      <article class="monitor-card">
+        <h3>&#26412;&#22320;&#21382;&#21490;</h3>
+        <div class="history-list" id="historyList"></div>
+      </article>
+      <article class="monitor-card">
+        <h3>&#25805;&#20316;&#29366;&#24577;</h3>
+        <div class="monitor-scroll" id="adminStatus">&#23601;&#32490;&#12290;</div>
+      </article>
+    </div>
+  </section>
+</main>
 
 <script>
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 const messages = document.getElementById("messages");
-const typing = document.getElementById("typing");
+const emptyState = document.getElementById("emptyState");
+const sourceList = document.getElementById("sourceList");
+const trustState = document.getElementById("trustState");
+const trustDetail = document.getElementById("trustDetail");
+const modeState = document.getElementById("modeState");
+const scoreState = document.getElementById("scoreState");
+const modeDescription = document.getElementById("modeDescription");
+const reportView = document.getElementById("reportView");
+const kbFileList = document.getElementById("kbFileList");
+const logView = document.getElementById("logView");
+const configView = document.getElementById("configView");
+const historyList = document.getElementById("historyList");
+const adminStatus = document.getElementById("adminStatus");
+const monitorPanel = document.getElementById("monitorPanel");
+const toggleMonitorBtn = document.getElementById("toggleMonitorBtn");
+const refreshMonitorBtn = document.getElementById("refreshMonitorBtn");
+const rebuildBtn = document.getElementById("rebuildBtn");
+let mode = "query";
 let history = [];
+const HISTORY_KEY = "ragWorkbenchHistory";
 
-function addMsg(role, text, meta) {
-    const div = document.createElement("div");
-    div.className = "msg " + role;
-    div.textContent = text;
-    if (role === "assistant" && meta && Array.isArray(meta.sources) && meta.sources.length) {
-        addSources(div, meta);
-    }
-    messages.insertBefore(div, typing);
-    history.push({role, text});
-    messages.scrollTop = messages.scrollHeight;
+function escapeHtml(text) {
+  return (text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-function addSources(container, meta) {
-    const wrap = document.createElement("div");
-    wrap.className = "sources";
+function renderInlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
 
-    const head = document.createElement("div");
-    head.className = "source-head";
-    head.textContent = "Sources";
+function renderMarkdownTable(lines) {
+  const rows = lines.map(line => line.trim().replace(/^\||\|$/g, "").split("|").map(cell => cell.trim()));
+  if (rows.length < 2) return "";
+  const header = rows[0];
+  const body = rows.slice(2);
+  return "<table><thead><tr>" + header.map(cell => "<th>" + renderInlineMarkdown(cell) + "</th>").join("") +
+    "</tr></thead><tbody>" + body.map(row => "<tr>" + row.map(cell => "<td>" + renderInlineMarkdown(cell) + "</td>").join("") + "</tr>").join("") +
+    "</tbody></table>";
+}
 
-    const mode = document.createElement("span");
-    mode.className = "source-pill";
-    mode.textContent = meta.mode || "rag";
-    head.appendChild(mode);
-
-    if (typeof meta.top_score === "number") {
-        const score = document.createElement("span");
-        score.className = "source-pill";
-        score.textContent = "top " + meta.top_score.toFixed(3);
-        head.appendChild(score);
+function renderAnswerHtml(text) {
+  const normalized = (text || "").replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trimStart();
+  const blocks = [];
+  const lines = normalized.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (line.startsWith("```")) {
+      const code = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) code.push(lines[i++]);
+      i++;
+      blocks.push("<pre><code>" + escapeHtml(code.join("\n")) + "</code></pre>");
+      continue;
     }
-    wrap.appendChild(head);
+    if (line.includes("|") && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i + 1])) {
+      const tableLines = [line, lines[i + 1]];
+      i += 2;
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim()) tableLines.push(lines[i++]);
+      blocks.push(renderMarkdownTable(tableLines));
+      continue;
+    }
+    if (/^\s*([-*])\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*([-*])\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*[-*]\s+/, ""));
+        i++;
+      }
+      blocks.push("<ul>" + items.map(item => "<li>" + renderInlineMarkdown(item) + "</li>").join("") + "</ul>");
+      continue;
+    }
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
+        i++;
+      }
+      blocks.push("<ol>" + items.map(item => "<li>" + renderInlineMarkdown(item) + "</li>").join("") + "</ol>");
+      continue;
+    }
+    const paragraph = [];
+    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("```") && !/^\s*([-*])\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
+      paragraph.push(lines[i++]);
+    }
+    blocks.push("<p>" + renderInlineMarkdown(paragraph.join(" ")) + "</p>");
+  }
+  return blocks.join("");
+}
 
-    meta.sources.slice(0, 4).forEach(src => {
-        const item = document.createElement("div");
-        item.className = "source-item";
+function setMode(nextMode) {
+  mode = nextMode;
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+  modeState.querySelector("span:last-child").textContent = mode === "query" ? "\u4e25\u683c RAG" : "Agent";
+  modeDescription.textContent = mode === "query"
+    ? "\u57fa\u4e8e\u672c\u5730 Markdown \u77e5\u8bc6\u5e93\u7684\u6d41\u5f0f\u56de\u7b54\u3002"
+    : "Agent \u6a21\u5f0f\u652f\u6301\u6d41\u5f0f\u8f93\u51fa\uff0c\u53ef\u80fd\u4f7f\u7528\u77e5\u8bc6\u5e93\u3001\u641c\u7d22\u6216\u81ea\u7531\u56de\u7b54\u3002";
+}
 
-        const title = document.createElement("div");
-        title.className = "source-title";
+function createMessage(role, text, meta) {
+  if (emptyState) emptyState.style.display = "none";
+  const wrap = document.createElement("div");
+  wrap.className = "message " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble answer-content";
+  bubble.innerHTML = renderAnswerHtml(text);
+  wrap.appendChild(bubble);
+  const row = document.createElement("div");
+  row.className = "message-meta";
+  row.textContent = role === "user" ? "You" : buildMetaText(meta);
+  wrap.appendChild(row);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+  return {wrap, bubble, row, text: text || ""};
+}
 
-        const name = document.createElement("span");
-        name.textContent = src.filename || src.source || "unknown";
-        title.appendChild(name);
+function addMessage(role, text, meta) {
+  const msg = createMessage(role, text, meta);
+  history.push({role, text});
+  saveHistory();
+  return msg;
+}
 
-        const score = document.createElement("span");
-        score.className = "source-score";
-        if (typeof src.score === "number") {
-            score.textContent = src.score.toFixed(3);
-        }
-        title.appendChild(score);
-        item.appendChild(title);
+function saveHistory() {
+  const compact = history.slice(-30);
+  localStorage.setItem("ragWorkbenchHistory", JSON.stringify(compact));
+  renderHistory();
+}
 
-        const preview = document.createElement("div");
-        preview.className = "source-preview";
-        preview.textContent = src.preview || "";
-        item.appendChild(preview);
+function loadHistory() {
+  try {
+    history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch (err) {
+    history = [];
+  }
+  renderHistory();
+}
 
-        wrap.appendChild(item);
+function renderHistory() {
+  if (!historyList) return;
+  historyList.innerHTML = "";
+  const questions = history.filter(item => item.role === "user").slice(-8).reverse();
+  if (!questions.length) {
+    const empty = document.createElement("div");
+    empty.className = "list-row muted";
+    empty.textContent = "\u6682\u65e0\u672c\u5730\u5386\u53f2\u3002";
+    historyList.appendChild(empty);
+    return;
+  }
+  questions.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "list-row";
+    const text = document.createElement("span");
+    text.textContent = item.text;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "\u518d\u95ee";
+    btn.addEventListener("click", () => {
+      input.value = item.text;
+      input.focus();
     });
-
-    container.appendChild(wrap);
+    row.appendChild(text);
+    row.appendChild(btn);
+    historyList.appendChild(row);
+  });
 }
 
-function scrollToBottom() {
-    messages.scrollTop = messages.scrollHeight;
+function appendAssistantToken(message, token) {
+  message.text += token || "";
+  message.bubble.innerHTML = renderAnswerHtml(message.text);
+  messages.scrollTop = messages.scrollHeight;
 }
 
-input.addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        send();
+function buildMetaText(meta) {
+  if (!meta) return "Assistant";
+  const parts = [meta.mode || "assistant"];
+  if (typeof meta.top_score === "number") parts.push("top " + meta.top_score.toFixed(3));
+  if (Array.isArray(meta.sources)) parts.push(meta.sources.length + " sources");
+  return parts.join(" | ");
+}
+
+function setStatus(pill, level, text) {
+  pill.className = "status-pill" + (level ? " " + level : "");
+  pill.querySelector("span:last-child").textContent = text;
+}
+
+function updateEvidence(data) {
+  const sources = Array.isArray(data.sources) ? data.sources : [];
+  sourceList.innerHTML = "";
+
+  if (data.mode === "no_context") {
+    trustState.textContent = "\u77e5\u8bc6\u5e93\u4f9d\u636e\u4e0d\u8db3";
+    trustDetail.textContent = "\u7cfb\u7edf\u6ca1\u6709\u7ee7\u7eed\u751f\u6210\u65e0\u4f9d\u636e\u5185\u5bb9\uff0c\u800c\u662f\u6309\u4f4e\u7f6e\u4fe1\u7b56\u7565\u62d2\u7b54\u3002";
+    setStatus(scoreState, "bad", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: low");
+  } else if (data.mode === "rag") {
+    trustState.textContent = "\u57fa\u4e8e\u77e5\u8bc6\u5e93\u56de\u7b54";
+    trustDetail.textContent = sources.length ? "\u56de\u7b54\u5df2\u5173\u8054\u53ec\u56de\u6765\u6e90\u7247\u6bb5\u3002" : "\u56de\u7b54\u6210\u529f\uff0c\u4f46\u672a\u8fd4\u56de\u6765\u6e90\u7247\u6bb5\u3002";
+    setStatus(scoreState, "good", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
+  } else {
+    trustState.textContent = "Agent \u56de\u7b54";
+    trustDetail.textContent = "Agent \u6a21\u5f0f\u53ef\u80fd\u4f7f\u7528\u641c\u7d22\u3001\u5de5\u5177\u6216\u81ea\u7531\u63a8\u7406\u3002";
+    setStatus(scoreState, "warn", "top score: n/a");
+  }
+
+  if (!sources.length) {
+    const empty = document.createElement("div");
+    empty.className = "source-empty";
+    empty.textContent = "\u672c\u6b21\u54cd\u5e94\u6ca1\u6709\u8fd4\u56de sources\u3002";
+    sourceList.appendChild(empty);
+    return;
+  }
+
+  data.sources.slice(0, 4).forEach(src => {
+    const card = document.createElement("div");
+    card.className = "source-card";
+    const top = document.createElement("div");
+    top.className = "source-top";
+    const name = document.createElement("div");
+    name.className = "source-name";
+    name.textContent = src.filename || src.source || "unknown";
+    top.appendChild(name);
+    const score = document.createElement("div");
+    score.className = "source-score";
+    score.textContent = typeof src.score === "number" ? src.score.toFixed(3) : "n/a";
+    top.appendChild(score);
+    card.appendChild(top);
+    const preview = document.createElement("div");
+    preview.className = "source-preview";
+    preview.textContent = src.preview || "\u65e0\u7247\u6bb5\u9884\u89c8";
+    card.appendChild(preview);
+    sourceList.appendChild(card);
+  });
+}
+
+function setLoading(isLoading) {
+  sendBtn.disabled = isLoading;
+  sendBtn.textContent = isLoading ? "\u751f\u6210\u4e2d" : "\u53d1\u9001";
+}
+
+async function sendStreaming(q) {
+  const assistant = createMessage("assistant streaming", "", {mode: "streaming"});
+  let meta = {mode: "rag", sources: []};
+  const response = await fetch("/query/stream", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: q})
+  });
+  if (!response.ok || !response.body) {
+    throw new Error("HTTP " + response.status);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, {stream: true});
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const event = JSON.parse(line);
+      if (event.event === "meta") {
+        meta = event;
+        assistant.row.textContent = buildMetaText(meta);
+        updateEvidence(meta);
+      } else if (event.event === "token") {
+        appendAssistantToken(assistant, event.text);
+      }
     }
-});
+  }
+  if (buffer.trim()) {
+    const event = JSON.parse(buffer);
+    if (event.event === "token") appendAssistantToken(assistant, event.text);
+  }
+  assistant.wrap.classList.remove("streaming");
+  assistant.row.textContent = buildMetaText(meta);
+  history.push({role:"assistant", text:assistant.text});
+}
 
+async function sendAgentStreaming(q) {
+  const assistant = createMessage("assistant streaming", "", {mode: "agent"});
+  let meta = {mode: "agent", sources: []};
+  const response = await fetch("/chat/stream", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: q})
+  });
+  if (!response.ok || !response.body) {
+    throw new Error("HTTP " + response.status);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, {stream: true});
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const event = JSON.parse(line);
+      if (event.event === "meta") {
+        meta = event;
+        assistant.row.textContent = buildMetaText(meta);
+        updateEvidence(meta);
+      } else if (event.event === "token") {
+        appendAssistantToken(assistant, event.text);
+      }
+    }
+  }
+  assistant.wrap.classList.remove("streaming");
+  assistant.row.textContent = buildMetaText(meta);
+  history.push({role:"assistant", text:assistant.text});
+}
+
+async function sendStandard(q) {
+  const resp = await fetch("/" + mode, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: q})
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.detail || "HTTP " + resp.status);
+  addMessage("assistant", data.answer || data.detail || "No response", data);
+  updateEvidence(data);
+}
+
+async function send(question) {
+  const q = (question || input.value).trim();
+  if (!q) return;
+  input.value = "";
+  input.style.height = "auto";
+  addMessage("user", q);
+  setLoading(true);
+  try {
+    if (mode === "query") {
+      await sendStreaming(q);
+    } else {
+      await sendAgentStreaming(q);
+    }
+  } catch (err) {
+    const message = "Request failed: " + err.message;
+    addMessage("assistant", message, {mode:"error"});
+    trustState.textContent = "\u8bf7\u6c42\u5931\u8d25";
+    trustDetail.innerHTML = '<span class="error-text">' + message + "</span>";
+    setStatus(scoreState, "bad", "request failed");
+  } finally {
+    setLoading(false);
+    input.focus();
+  }
+}
+
+async function loadReports() {
+  const data = await fetch("/reports").then(resp => resp.json());
+  const latest = data.reports["latest.md"] || "";
+  const answer = data.reports["answer_quality.md"] || "";
+  reportView.textContent = [latest, answer].filter(Boolean).join("\n\n---\n\n") || "\u6682\u65e0\u8bc4\u6d4b\u62a5\u544a\u3002";
+}
+
+async function loadKbFiles() {
+  const data = await fetch("/kb/files").then(resp => resp.json());
+  kbFileList.innerHTML = "";
+  if (!data.files.length) {
+    kbFileList.innerHTML = '<div class="list-row muted">\u6682\u65e0 Markdown \u6587\u4ef6\u3002</div>';
+    return;
+  }
+  data.files.forEach(file => {
+    const row = document.createElement("div");
+    row.className = "list-row";
+    const modified = new Date(file.modified * 1000).toLocaleString();
+    row.innerHTML = "<span>" + file.name + '<br><span class="muted">' + file.size + " bytes | " + modified + "</span></span>";
+    kbFileList.appendChild(row);
+  });
+}
+
+async function loadLogs() {
+  const data = await fetch("/logs/recent").then(resp => resp.json());
+  logView.textContent = data.lines.length ? data.lines.join("\n") : "\u6682\u65e0\u65e5\u5fd7\u3002";
+}
+
+async function loadConfig() {
+  const data = await fetch("/config").then(resp => resp.json());
+  configView.innerHTML = "";
+  Object.entries(data).forEach(([key, value]) => {
+    const row = document.createElement("div");
+    row.className = "list-row";
+    row.innerHTML = "<span>" + key + '</span><span class="muted">' + value + "</span>";
+    configView.appendChild(row);
+  });
+}
+
+async function loadMonitor() {
+  adminStatus.textContent = "\u6b63\u5728\u5237\u65b0\u76d1\u63a7\u9762\u677f...";
+  try {
+    await Promise.all([loadReports(), loadKbFiles(), loadLogs(), loadConfig()]);
+    adminStatus.textContent = "\u76d1\u63a7\u9762\u677f\u5df2\u66f4\u65b0\u3002";
+  } catch (err) {
+    adminStatus.textContent = "\u76d1\u63a7\u52a0\u8f7d\u5931\u8d25: " + err.message;
+  }
+}
+
+function toggleMonitor() {
+  const collapsed = monitorPanel.classList.toggle("collapsed");
+  toggleMonitorBtn.textContent = collapsed ? "\u5c55\u5f00\u76d1\u63a7" : "\u6536\u8d77\u76d1\u63a7";
+}
+
+async function rebuildIndex() {
+  if (!confirm("\u786e\u5b9a\u8981\u91cd\u65b0\u5efa\u5e93\u5417\uff1f\u8fd9\u53ef\u80fd\u9700\u8981\u4e00\u4e9b\u65f6\u95f4\u3002")) return;
+  rebuildBtn.disabled = true;
+  adminStatus.textContent = "\u6b63\u5728\u91cd\u65b0\u5efa\u5e93...";
+  try {
+    const data = await fetch("/ingest", {method: "POST"}).then(resp => resp.json());
+    adminStatus.textContent = "\u5efa\u5e93\u5b8c\u6210\uff0cchunks: " + data.chunks;
+    await loadMonitor();
+  } catch (err) {
+    adminStatus.textContent = "\u5efa\u5e93\u5931\u8d25: " + err.message;
+  } finally {
+    rebuildBtn.disabled = false;
+  }
+}
+
+document.querySelectorAll(".mode-btn").forEach(btn => {
+  btn.addEventListener("click", () => setMode(btn.dataset.mode));
+});
+document.querySelectorAll(".example-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    input.value = btn.dataset.question;
+    input.focus();
+  });
+});
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    send();
+  }
+});
 input.addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 150) + "px";
 });
-
-sendBtn.addEventListener("click", send);
-
-async function send() {
-    const q = input.value.trim();
-    if (!q) return;
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    input.value = "";
-    input.style.height = "auto";
-    addMsg("user", q);
-    typing.className = "typing show";
-    sendBtn.disabled = true;
-    try {
-        const resp = await fetch("/" + mode, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({question: q})
-        });
-        const data = await resp.json();
-        typing.className = "typing";
-        addMsg("assistant", data.answer || data.detail || "无返回", data);
-    } catch(e) {
-        typing.className = "typing";
-        addMsg("assistant", "请求失败: " + e);
-    } finally {
-        sendBtn.disabled = false;
-        input.focus();
-    }
-}
+sendBtn.addEventListener("click", () => send());
+toggleMonitorBtn.addEventListener("click", toggleMonitor);
+refreshMonitorBtn.addEventListener("click", loadMonitor);
+rebuildBtn.addEventListener("click", rebuildIndex);
+setMode("query");
+loadHistory();
+loadMonitor();
 </script>
 </body>
 </html>

@@ -183,9 +183,10 @@ python main.py --ingest
 
 ## 六、评测
 
+### 6.1 检索质量评测
+
 ```bash
-.venv\Scripts\activate
-python evaluation/runner.py
+.\.venv-conda\python.exe evaluation\runner.py
 ```
 
 输出示例：
@@ -214,6 +215,31 @@ evaluation/reports/latest.md
 ```
 
 报告中包含 baseline / optimized 的聚合指标，以及每种检索方式的 miss case，方便做 bad case 分析。
+
+### 6.2 答案质量评测
+
+检索评测回答的是“有没有找回正确片段”，答案质量评测回答的是“最终答案是否可信”。
+
+```powershell
+.\.venv-conda\python.exe evaluation\answer_runner.py
+```
+
+输出指标包括：
+
+| 指标 | 含义 |
+|------|------|
+| Correctness | 答案是否覆盖标准答案关键词 |
+| Faithfulness | 答案是否能被召回 sources 支撑 |
+| Citation Coverage | 答案是否显式包含来源文件 |
+| Refusal Accuracy | 知识库没有依据时是否正确拒答 |
+
+运行后会生成：
+
+```text
+evaluation/reports/answer_quality.md
+```
+
+注意：答案质量评测会调用大模型生成答案，因此比纯检索评测更慢，也会消耗 API 调用额度。
 
 ---
 

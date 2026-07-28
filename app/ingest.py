@@ -226,6 +226,14 @@ def batch_embed_and_store(
     if clear_first:
         store.clear()
         print("[INFO] Cleared existing vector store")
+    else:
+        source_paths = sorted({
+            doc.metadata.get("source")
+            for doc in chunks
+            if doc.metadata.get("source")
+        })
+        if source_paths:
+            store.delete_by_sources(source_paths)
 
     print(f"[INFO] Processing {total} chunks in batches of {batch_size}...")
 
@@ -235,7 +243,7 @@ def batch_embed_and_store(
 
         try:
             vectors = embeddings.embed_documents(texts)
-            store.add_documents(batch, vectors)
+            store.add_documents(batch, vectors, replace_sources=False)
             print(f"  [OK] Processed {min(i + batch_size, total)}/{total} chunks")
         except Exception as e:
             print(f"  [ERROR] Failed at batch {i // batch_size + 1}: {e}")

@@ -1,12 +1,86 @@
 # RAG 知识库系统（四阶段演进版）
 
+## 快速体验
+
+这是一个面向个人知识库问答场景的 RAG Workbench：用户可以在 Web 页面中提问，系统会基于 `data/` 目录中的 Markdown 知识库进行检索增强回答，并在页面中展示回答来源、相似度、评测报告、知识库文件、日志和历史对话。
+
+### 普通用户如何使用
+
+如果项目已经部署到公网，普通用户只需要打开 Demo 链接：
+
+```text
+https://your-demo-domain.example.com
+```
+
+进入页面后：
+
+1. 在聊天输入框中输入问题。
+2. 查看流式生成的回答。
+3. 在右侧查看证据来源和相似度。
+4. 在下方 Admin 区域查看知识库文件、评测报告、日志和历史问题。
+
+普通用户不需要安装 Python、Docker 或配置向量库。
+
+### 开发者本地运行
+
+```powershell
+git clone git@github.com:leon6657/-Agent-RAG-.git
+cd RAG-project
+conda create -p .\.venv-conda python=3.11 -y
+conda activate .\.venv-conda
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+在 `.env` 中填写：
+
+```text
+DEEPSEEK_API_KEY=your_api_key
+DEEPSEEK_MODEL=deepseek-v4-flash
+RAG_MIN_SCORE=0.35
+```
+
+构建知识库并启动 Web 服务：
+
+```powershell
+python main.py --ingest
+python main.py --serve
+```
+
+访问：
+
+```text
+http://localhost:8000
+```
+
+### Docker 固定知识库 Demo
+
+适合面试展示、作品集 Demo 或部署到 Render / Railway / 云服务器。
+
+```powershell
+docker build -t rag-workbench-demo .
+docker run --rm -p 8000:8000 `
+  -e DEEPSEEK_API_KEY=your_api_key `
+  -e DEEPSEEK_MODEL=deepseek-v4-flash `
+  -e RAG_MIN_SCORE=0.35 `
+  rag-workbench-demo
+```
+
+访问：
+
+```text
+http://localhost:8000
+```
+
+Docker 镜像会在构建阶段执行 `python main.py --ingest`，因此部署后的 Demo 会自带固定知识库索引。更详细的部署说明见 [docs/deployment-demo.md](docs/deployment-demo.md)。
+
 ## 项目速览
 
 这是一个面向 **LLM 应用工程 / RAG 后端方向** 的个人项目：用本地 Markdown 文档构建私有知识库，支持向量检索、混合检索、RAG 问答、Agent 兜底、FastAPI 服务化和 Recall@k 评测闭环。
 
 **当前可复现状态：**
 
-- 知识库：`data/` 下 11 篇 Markdown 文档，已索引 50 个 chunk
+- 知识库：`data/` 下的 Markdown 文档，可通过 `python main.py --ingest` 或 Docker 构建流程生成索引
 - 向量库：本地 `vector_store.json`，使用 numpy 余弦相似度检索
 - Embedding：`BAAI/bge-small-zh-v1.5`
 - LLM：DeepSeek OpenAI-compatible API，默认模型 `deepseek-v4-flash`

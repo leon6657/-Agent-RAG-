@@ -39,7 +39,11 @@ def _save_items(items: List[Dict[str, Any]]) -> None:
         json.dump(items, f, ensure_ascii=False, indent=2)
 
 
-def add_documents(docs: List[Document], embeddings: List[List[float]]) -> None:
+def add_documents(
+    docs: List[Document],
+    embeddings: List[List[float]],
+    replace_sources: bool = True,
+) -> None:
     """
     添加文档。如果文档已有chunk_id则更新（upsert），否则新增。
     支持按 source 去重：同一来源的旧chunk会被清理。
@@ -75,7 +79,7 @@ def add_documents(docs: List[Document], embeddings: List[List[float]]) -> None:
     # 加载现有数据
     existing = _load_items()
 
-    if sources_to_remove:
+    if replace_sources and sources_to_remove:
         # 删除这些来源的所有旧chunk
         existing = [
             item for item in existing
@@ -95,6 +99,7 @@ def add_documents(docs: List[Document], embeddings: List[List[float]]) -> None:
             existing.append(item)
 
     _save_items(existing)
+    invalidate_cache()
 
 
 def search(query_embedding: List[float], k: int = 4, min_score: float = 0.0) -> List[Document]:
