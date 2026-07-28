@@ -2,14 +2,20 @@
 
 ## 快速体验
 
-这是一个面向个人知识库问答场景的 RAG Workbench：用户可以在 Web 页面中提问，系统会基于 `data/` 目录中的 Markdown 知识库进行检索增强回答，并在页面中展示回答来源、相似度、评测报告、知识库文件、日志和历史对话。
+这是一个面向个人知识库问答场景的 RAG-Agent Workbench：用户可以在 Web 页面中提问，系统会基于 `data/` 目录中的 Markdown 知识库进行检索增强回答，并在页面中展示回答来源、相似度、评测报告、知识库文件、日志和历史对话。
 
-### 普通用户如何使用
+### 如何使用demo
 
-如果项目已经部署到公网，普通用户只需要打开 Demo 链接：
+（由于使用免费云服务器，CPU 推理 embedding 会慢很多。尤其每次提问都要先把问题转成 embedding，再做检索，然后再请求LLM生成答案。
+
+实际使用时感觉模型回复存在延迟还请谅解，本人后续会对其进行预热 embedding优化。也可以copy代码本地部署，十分感谢！
+
+添加知识库文件、重新建库、修改配置等功能暂时无法直接支持demo演示，可以进行本地部署进行体验。）
+
+项目已经部署到公网，只需要打开 Demo 链接：
 
 ```text
-https://your-demo-domain.example.com
+https://rag-workbench-demo.onrender.com
 ```
 
 进入页面后：
@@ -19,7 +25,7 @@ https://your-demo-domain.example.com
 3. 在右侧查看证据来源和相似度。
 4. 在下方 Admin 区域查看知识库文件、评测报告、日志和历史问题。
 
-普通用户不需要安装 Python、Docker 或配置向量库。
+不需要安装 Python、Docker 或配置向量库。
 
 ### 开发者本地运行
 
@@ -55,7 +61,7 @@ http://localhost:8000
 
 ### Docker 固定知识库 Demo
 
-适合面试展示、作品集 Demo 或部署到 Render / Railway / 云服务器。
+适合下载到本地展示、作品集 Demo 或部署到 Render / Railway / 云服务器。
 
 ```powershell
 docker build -t rag-workbench-demo .
