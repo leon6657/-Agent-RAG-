@@ -28,7 +28,9 @@ def test_workbench_page_offers_enough_example_questions():
     assert "Embedding 模型在 RAG 系统中负责什么？" in html
     assert "如何把这个项目部署到公网？" in html
     assert "为什么 Render 免费实例第一次回答会比较慢？" in html
-    assert ".example-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;" in html
+    assert 'class="section examples-section"' in html
+    assert ".examples-section{min-height:0;flex:1}" in html
+    assert ".example-list{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1;overflow:auto;" in html
 
 
 def test_workbench_page_keeps_existing_api_contract():

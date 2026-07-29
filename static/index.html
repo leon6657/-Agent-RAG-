@@ -18,11 +18,12 @@ button{border:0;cursor:pointer}
 .app-shell{min-height:100vh;display:grid;grid-template-columns:280px minmax(420px,1fr) 360px;grid-template-rows:clamp(620px,calc(100vh - 140px),calc(100vh - 32px)) auto;gap:16px;padding:16px}
 .panel{min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
 .control-panel,.chat-panel,.evidence-panel{height:clamp(620px,calc(100vh - 140px),calc(100vh - 32px));min-height:620px;max-height:calc(100vh - 32px)}
-.control-panel{display:flex;flex-direction:column;gap:16px;padding:16px;overflow:auto}
+.control-panel{display:flex;flex-direction:column;gap:16px;padding:16px;overflow:hidden}
 .brand{padding-bottom:12px;border-bottom:1px solid var(--line)}
 .brand h1{font-size:20px;font-weight:750;letter-spacing:0}
 .brand p{margin-top:5px;font-size:13px;line-height:1.45;color:var(--muted)}
 .section{display:flex;flex-direction:column;gap:10px}
+.examples-section{min-height:0;flex:1}
 .section-title{font-size:12px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
 .mode-btn{height:36px;border-radius:6px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
@@ -31,7 +32,7 @@ button{border:0;cursor:pointer}
 .metric{padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
 .metric .label{font-size:11px;color:var(--muted)}
 .metric .value{margin-top:3px;font-size:18px;font-weight:780}
-.example-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:2px}
+.example-list{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1;overflow:auto;padding-right:2px}
 .example-btn{text-align:left;padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:13px;line-height:1.45}
 .example-btn:hover{border-color:#bfdbfe;background:var(--blue-soft)}
 .hint{margin-top:auto;padding:12px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:12px;line-height:1.5}
@@ -154,7 +155,7 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
         <div class="metric"><div class="label">Chunks</div><div class="value">50</div></div>
       </div>
     </section>
-    <section class="section">
+    <section class="section examples-section">
       <div class="section-title">Examples</div>
       <div class="example-list">
         <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">dict.get(key, default) &#30340;&#20316;&#29992;</button>
