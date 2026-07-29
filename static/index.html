@@ -31,7 +31,7 @@ button{border:0;cursor:pointer}
 .metric{padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
 .metric .label{font-size:11px;color:var(--muted)}
 .metric .value{margin-top:3px;font-size:18px;font-weight:780}
-.example-list{display:flex;flex-direction:column;gap:8px}
+.example-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:2px}
 .example-btn{text-align:left;padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:13px;line-height:1.45}
 .example-btn:hover{border-color:#bfdbfe;background:var(--blue-soft)}
 .hint{margin-top:auto;padding:12px;background:var(--soft);border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:12px;line-height:1.5}
@@ -158,8 +158,15 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
       <div class="section-title">Examples</div>
       <div class="example-list">
         <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">dict.get(key, default) &#30340;&#20316;&#29992;</button>
+        <button class="example-btn" data-question="Python 中列表和元组有什么区别？" type="button">Python &#21015;&#34920;&#21644;&#20803;&#32452;</button>
+        <button class="example-btn" data-question="栈和队列的区别是什么？适合什么场景？" type="button">&#26632;&#21644;&#38431;&#21015;&#30340;&#21306;&#21035;</button>
         <button class="example-btn" data-question="LCEL 是什么？" type="button">LCEL &#26159;&#20160;&#20040;</button>
         <button class="example-btn" data-question="RAG 中检索器的作用是什么？" type="button">RAG &#26816;&#32034;&#22120;</button>
+        <button class="example-btn" data-question="Embedding 模型在 RAG 系统中负责什么？" type="button">Embedding &#27169;&#22411;</button>
+        <button class="example-btn" data-question="Agent 和普通 RAG 问答有什么区别？" type="button">Agent &#19982; RAG &#21306;&#21035;</button>
+        <button class="example-btn" data-question="这个项目的技术栈有哪些？" type="button">&#39033;&#30446;&#25216;&#26415;&#26632;</button>
+        <button class="example-btn" data-question="如何把这个项目部署到公网？" type="button">&#20844;&#32593;&#37096;&#32626;&#26041;&#27861;</button>
+        <button class="example-btn" data-question="为什么 Render 免费实例第一次回答会比较慢？" type="button">Render &#39318;&#27425;&#21709;&#24212;&#24930;</button>
         <button class="example-btn" data-question="这个知识库里有没有部署到云服务器的步骤？" type="button">&#27979;&#35797;&#20302;&#32622;&#20449;&#25298;&#31572;</button>
       </div>
     </section>

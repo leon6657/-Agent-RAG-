@@ -20,6 +20,17 @@ def test_workbench_page_contains_core_regions():
     assert 'id="historyList"' in html
 
 
+def test_workbench_page_offers_enough_example_questions():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert html.count('class="example-btn"') >= 10
+    assert "Python 中列表和元组有什么区别？" in html
+    assert "Embedding 模型在 RAG 系统中负责什么？" in html
+    assert "如何把这个项目部署到公网？" in html
+    assert "为什么 Render 免费实例第一次回答会比较慢？" in html
+    assert ".example-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;" in html
+
+
 def test_workbench_page_keeps_existing_api_contract():
     html = Path("static/index.html").read_text(encoding="utf-8")
 
