@@ -46,6 +46,74 @@ def test_recent_logs_endpoint_returns_tail(tmp_path, monkeypatch):
     assert response.json() == {"lines": ["b", "c"]}
 
 
+def test_recent_logs_endpoint_returns_helpful_fallback(tmp_path, monkeypatch):
+    monkeypatch.setattr(api, "ROOT_DIR", tmp_path)
+
+    response = TestClient(api.app).get("/logs/recent")
+
+    assert response.status_code == 200
+    assert "暂未产生日志" in response.json()["lines"][0]
+
+
+def test_metrics_endpoint_combines_report_store_and_last_interaction(tmp_path, monkeypatch):
+    reports_dir = tmp_path / "evaluation" / "reports"
+    reports_dir.mkdir(parents=True)
+    (reports_dir / "latest.md").write_text(
+        "\n".join(
+            [
+                "# Retrieval Evaluation Report",
+                "",
+                "| Run | Questions | K | Recall@K | MRR | Precision@K | SourceHit@K | Misses |",
+                "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+                "| Baseline | 30 | 4 | 0.900 | 0.800 | 0.200 | 0.900 | 3 |",
+                "| Optimized | 30 | 4 | 1.000 | 0.944 | 0.250 | 1.000 | 0 |",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(api, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr("app.store.count", lambda: 344)
+    api.record_interaction(
+        question="LCEL 是什么？",
+        mode="rag",
+        top_score=0.8123,
+        sources_count=4,
+    )
+
+    response = TestClient(api.app).get("/metrics")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["retrieval"]["run"] == "Optimized"
+    assert data["retrieval"]["recall"] == 1.0
+    assert data["retrieval"]["mrr"] == 0.944
+    assert data["knowledge_base"]["chunks"] == 344
+    assert data["last_answer"]["question"] == "LCEL 是什么？"
+    assert data["last_answer"]["top_score"] == 0.8123
+
+
+def test_query_endpoint_records_recent_log_and_metric_state(tmp_path, monkeypatch):
+    monkeypatch.setattr(api, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr(
+        "app.query.ask_with_sources",
+        lambda question: {
+            "answer": "ok",
+            "sources": [{"filename": "demo.md", "score": 0.91}],
+            "mode": "rag",
+            "top_score": 0.91,
+        },
+    )
+
+    response = TestClient(api.app).post("/query", json={"question": "测试问题"})
+
+    assert response.status_code == 200
+    lines = TestClient(api.app).get("/logs/recent").json()["lines"]
+    assert any("query" in line and "测试问题" in line for line in lines)
+    metrics = TestClient(api.app).get("/metrics").json()
+    assert metrics["last_answer"]["question"] == "测试问题"
+    assert metrics["last_answer"]["sources_count"] == 1
+
+
 def test_config_endpoint_is_read_only_and_redacts_secret(monkeypatch):
     monkeypatch.setattr(api.config, "deepseek_api_key", "sk-secret-value")
 

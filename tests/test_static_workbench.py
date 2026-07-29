@@ -18,6 +18,8 @@ def test_workbench_page_contains_core_regions():
     assert 'id="kbFileList"' in html
     assert 'id="logView"' in html
     assert 'id="historyList"' in html
+    assert 'id="metricRecall"' in html
+    assert 'id="metricTopScore"' in html
 
 
 def test_workbench_page_offers_enough_example_questions():
@@ -43,6 +45,7 @@ def test_workbench_page_keeps_existing_api_contract():
     assert "data.sources" in html
     assert "data.top_score" in html
     assert 'fetch("/reports")' in html
+    assert 'fetch("/metrics")' in html
     assert 'fetch("/kb/files")' in html
     assert 'fetch("/logs/recent")' in html
     assert 'fetch("/config")' in html
@@ -83,6 +86,17 @@ def test_workbench_page_uses_local_history():
     assert "ragWorkbenchHistory" in html
     assert "function saveHistory" in html
     assert "function renderHistory" in html
+
+
+def test_workbench_page_refreshes_dynamic_metrics_and_logs():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert "function loadMetrics" in html
+    assert "formatMetric" in html
+    assert "buildReportSummary" in html
+    assert "await loadMetrics()" in html
+    assert "await loadLogs()" in html
+    assert "最近一次问题" in html
 
 
 def test_workbench_layout_uses_fixed_chat_and_scrollable_monitor_cards():

@@ -152,31 +152,31 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
     <section class="section">
       <div class="section-title">Evaluation</div>
       <div class="metric-grid">
-        <div class="metric"><div class="label">Recall@4</div><div class="value">1.000</div></div>
-        <div class="metric"><div class="label">MRR</div><div class="value">0.944</div></div>
-        <div class="metric"><div class="label">SourceHit@4</div><div class="value">1.000</div></div>
-        <div class="metric"><div class="label">Chunks</div><div class="value">50</div></div>
+        <div class="metric"><div class="label">Recall@4</div><div class="value" id="metricRecall">--</div></div>
+        <div class="metric"><div class="label">MRR</div><div class="value" id="metricMrr">--</div></div>
+        <div class="metric"><div class="label">Last top</div><div class="value" id="metricTopScore">n/a</div></div>
+        <div class="metric"><div class="label">Chunks</div><div class="value" id="metricChunks">--</div></div>
       </div>
     </section>
     <section class="section examples-section">
       <div class="section-title">Examples</div>
       <div class="example-list">
         <button class="example-btn" data-question="请介绍一下这个 RAG-Agent 项目的核心功能。" type="button">项目核心功能</button>
-        <button class="example-btn" data-question="项目中“严格 RAG 模式”和“Agent 模式”有什么区别？" type="button">严格 RAG 模式”和“Agent 模式</button>
-        <button class="example-btn" data-question="如果知识库没有相关内容，系统会怎么处理？" type="button">知识库缺乏相关内容怎么处理</button>
-        <button class="example-btn" data-question="Agent 模式的执行流程是什么？" type="button">Agent 模式的执行流程</button>
-        <button class="example-btn" data-question="Agent 如何决定使用知识库回答还是走开放域回答？" type="button">Agent 自主决策</button>
-        <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">dict.get(key, default) &#30340;&#20316;&#29992;</button>
-        <button class="example-btn" data-question="Python 中列表和元组有什么区别？" type="button">Python &#21015;&#34920;&#21644;&#20803;&#32452;</button>
-        <button class="example-btn" data-question="栈和队列的区别是什么？适合什么场景？" type="button">&#26632;&#21644;&#38431;&#21015;&#30340;&#21306;&#21035;</button>
-        <button class="example-btn" data-question="LCEL 是什么？" type="button">LCEL &#26159;&#20160;&#20040;</button>
-        <button class="example-btn" data-question="RAG 中检索器的作用是什么？" type="button">RAG &#26816;&#32034;&#22120;</button>
-        <button class="example-btn" data-question="Embedding 模型在 RAG 系统中负责什么？" type="button">Embedding &#27169;&#22411;</button>
-        <button class="example-btn" data-question="Agent 和普通 RAG 问答有什么区别？" type="button">Agent &#19982; RAG &#21306;&#21035;</button>
-        <button class="example-btn" data-question="这个项目的技术栈有哪些？" type="button">&#39033;&#30446;&#25216;&#26415;&#26632;</button>
-        <button class="example-btn" data-question="如何把这个项目部署到公网？" type="button">&#20844;&#32593;&#37096;&#32626;&#26041;&#27861;</button>
-        <button class="example-btn" data-question="为什么 Render 免费实例第一次回答会比较慢？" type="button">Render &#39318;&#27425;&#21709;&#24212;&#24930;</button>
-        <button class="example-btn" data-question="这个知识库里有没有部署到云服务器的步骤？" type="button">该项目怎么部署到云服务器</button>
+        <button class="example-btn" data-question="项目中严格 RAG 模式和 Agent 模式有什么区别？" type="button">严格 RAG 与 Agent</button>
+        <button class="example-btn" data-question="如果知识库没有相关内容，系统会怎么处理？" type="button">知识库缺少相关内容</button>
+        <button class="example-btn" data-question="Agent 模式的执行流程是什么？" type="button">Agent 执行流程</button>
+        <button class="example-btn" data-question="Agent 如何决定使用知识库回答还是开放域回答？" type="button">Agent 自主决策</button>
+        <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">dict.get(key, default) 的作用</button>
+        <button class="example-btn" data-question="Python 中列表和元组有什么区别？" type="button">Python 列表和元组</button>
+        <button class="example-btn" data-question="栈和队列的区别是什么？适合什么场景？" type="button">栈和队列的区别</button>
+        <button class="example-btn" data-question="LCEL 是什么？" type="button">LCEL 是什么</button>
+        <button class="example-btn" data-question="RAG 中检索器的作用是什么？" type="button">RAG 检索器</button>
+        <button class="example-btn" data-question="Embedding 模型在 RAG 系统中负责什么？" type="button">Embedding 模型</button>
+        <button class="example-btn" data-question="Agent 和普通 RAG 问答有什么区别？" type="button">Agent 与 RAG 区别</button>
+        <button class="example-btn" data-question="这个项目的技术栈有哪些？" type="button">项目技术栈</button>
+        <button class="example-btn" data-question="如何把这个项目部署到公网？" type="button">公网部署方法</button>
+        <button class="example-btn" data-question="为什么 Render 免费实例第一次回答会比较慢？" type="button">Render 首次响应慢</button>
+        <button class="example-btn" data-question="这个知识库里有没有部署到云服务器的步骤？" type="button">云服务器部署步骤</button>
       </div>
     </section>
     <div class="hint">&#20005;&#26684; RAG &#21644; Agent &#37117;&#20250;&#27969;&#24335;&#36755;&#20986;&#12290;&#21491;&#20391;&#20250;&#23637;&#31034;&#26469;&#28304;&#12289;&#27169;&#24335;&#21644;&#32622;&#20449;&#29366;&#24577;&#12290;</div>
@@ -284,6 +284,10 @@ const monitorPanel = document.getElementById("monitorPanel");
 const toggleMonitorBtn = document.getElementById("toggleMonitorBtn");
 const refreshMonitorBtn = document.getElementById("refreshMonitorBtn");
 const rebuildBtn = document.getElementById("rebuildBtn");
+const metricRecall = document.getElementById("metricRecall");
+const metricMrr = document.getElementById("metricMrr");
+const metricTopScore = document.getElementById("metricTopScore");
+const metricChunks = document.getElementById("metricChunks");
 let mode = "query";
 let history = [];
 const HISTORY_KEY = "ragWorkbenchHistory";
@@ -646,15 +650,64 @@ async function send(question) {
     setStatus(scoreState, "bad", "request failed");
   } finally {
     setLoading(false);
+    await loadMetrics();
+    await loadLogs();
     input.focus();
   }
 }
 
+function formatMetric(value) {
+  return typeof value === "number" ? value.toFixed(3) : "n/a";
+}
+
+function buildReportSummary(metrics) {
+  const retrieval = metrics.retrieval || {};
+  const kb = metrics.knowledge_base || {};
+  const last = metrics.last_answer;
+  const lines = [
+    "当前运行摘要",
+    "",
+    "- 评测版本: " + (retrieval.run || "暂无评测报告"),
+    "- Recall@" + (retrieval.k || 4) + ": " + formatMetric(retrieval.recall),
+    "- MRR: " + formatMetric(retrieval.mrr),
+    "- SourceHit@" + (retrieval.k || 4) + ": " + formatMetric(retrieval.source_hit),
+    "- 知识库文件: " + (typeof kb.files === "number" ? kb.files : "n/a"),
+    "- 知识库片段: " + (typeof kb.chunks === "number" ? kb.chunks : "n/a"),
+  ];
+  if (last) {
+    lines.push(
+      "- 最近一次问题: " + last.question,
+      "- 最近回答模式: " + last.mode,
+      "- 最近 top score: " + formatMetric(last.top_score),
+      "- 最近来源数量: " + last.sources_count
+    );
+  } else {
+    lines.push("- 最近一次问题: 暂无，发送问题后会自动更新。");
+  }
+  return lines.join("\n");
+}
+
+async function loadMetrics() {
+  const metrics = await fetch("/metrics").then(resp => resp.json());
+  const retrieval = metrics.retrieval || {};
+  const kb = metrics.knowledge_base || {};
+  const last = metrics.last_answer || {};
+  metricRecall.textContent = formatMetric(retrieval.recall);
+  metricMrr.textContent = formatMetric(retrieval.mrr);
+  metricTopScore.textContent = formatMetric(last.top_score);
+  metricChunks.textContent = typeof kb.chunks === "number" ? String(kb.chunks) : "--";
+  return metrics;
+}
+
 async function loadReports() {
-  const data = await fetch("/reports").then(resp => resp.json());
+  const [data, metrics] = await Promise.all([
+    fetch("/reports").then(resp => resp.json()),
+    loadMetrics(),
+  ]);
   const latest = data.reports["latest.md"] || "";
   const answer = data.reports["answer_quality.md"] || "";
-  reportView.textContent = [latest, answer].filter(Boolean).join("\n\n---\n\n") || "\u6682\u65e0\u8bc4\u6d4b\u62a5\u544a\u3002";
+  const reportText = [latest, answer].filter(Boolean).join("\n\n---\n\n") || "\u6682\u65e0\u8bc4\u6d4b\u62a5\u544a\u3002";
+  reportView.textContent = buildReportSummary(metrics) + "\n\n---\n\n" + reportText;
 }
 
 async function loadKbFiles() {
