@@ -59,6 +59,10 @@ def test_workbench_page_streams_and_formats_answers():
     assert "<strong>$1</strong>" in html
     assert "function renderMarkdownTable" in html
     assert "answer-content" in html
+    assert "function renderMarkdownHeading" in html
+    assert "<h3>" in html
+    assert 'start="' in html
+    assert "orderedListNext" in html
 
 
 def test_workbench_page_uses_chinese_labels():

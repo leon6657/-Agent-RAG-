@@ -61,6 +61,9 @@ button{border:0;cursor:pointer}
 .answer-content{white-space:normal}
 .answer-content p{margin:0 0 10px}
 .answer-content p:last-child{margin-bottom:0}
+.answer-content h3{margin:10px 0 8px;font-size:15px;font-weight:800;color:#0f172a}
+.answer-content h4{margin:9px 0 7px;font-size:14px;font-weight:780;color:#111827}
+.answer-content hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 .answer-content strong{font-weight:780;color:#0f172a}
 .answer-content code{padding:2px 5px;border-radius:5px;background:#f1f5f9;color:#0f172a;font-family:"Consolas","SFMono-Regular",monospace;font-size:.92em}
 .answer-content pre{overflow:auto;margin:10px 0;padding:12px;border-radius:8px;background:#0f172a;color:#e5e7eb}
@@ -303,14 +306,32 @@ function renderMarkdownTable(lines) {
     "</tbody></table>";
 }
 
+function renderMarkdownHeading(line) {
+  const match = line.match(/^\s*(#{1,4})\s+(.+?)\s*#*\s*$/);
+  if (!match) return "";
+  const level = match[1].length >= 3 ? "h4" : "h3";
+  return "<" + level + ">" + renderInlineMarkdown(match[2]) + "</" + level + ">";
+}
+
 function renderAnswerHtml(text) {
   const normalized = (text || "").replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trimStart();
   const blocks = [];
   const lines = normalized.split("\n");
   let i = 0;
+  let orderedListNext = 1;
   while (i < lines.length) {
     const line = lines[i];
     if (!line.trim()) { i++; continue; }
+    if (/^\s*---+\s*$/.test(line)) {
+      blocks.push("<hr>");
+      i++;
+      continue;
+    }
+    if (/^\s*#{1,4}\s+/.test(line)) {
+      blocks.push(renderMarkdownHeading(line));
+      i++;
+      continue;
+    }
     if (line.startsWith("```")) {
       const code = [];
       i++;
@@ -337,15 +358,18 @@ function renderAnswerHtml(text) {
     }
     if (/^\s*\d+\.\s+/.test(line)) {
       const items = [];
+      const firstNumber = parseInt(line.match(/^\s*(\d+)\.\s+/)[1], 10);
+      const start = firstNumber <= 1 && orderedListNext > 1 ? orderedListNext : firstNumber;
       while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
         items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
         i++;
       }
-      blocks.push("<ol>" + items.map(item => "<li>" + renderInlineMarkdown(item) + "</li>").join("") + "</ol>");
+      orderedListNext = start + items.length;
+      blocks.push('<ol start="' + start + '">' + items.map(item => "<li>" + renderInlineMarkdown(item) + "</li>").join("") + "</ol>");
       continue;
     }
     const paragraph = [];
-    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("```") && !/^\s*([-*])\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("```") && !/^\s*---+\s*$/.test(lines[i]) && !/^\s*#{1,4}\s+/.test(lines[i]) && !/^\s*([-*])\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
       paragraph.push(lines[i++]);
     }
     blocks.push("<p>" + renderInlineMarkdown(paragraph.join(" ")) + "</p>");
