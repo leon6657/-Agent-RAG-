@@ -11,10 +11,10 @@ Phase 2 在 Phase 1 最小 RAG 的基础上，引入了完整的评测体系、�
 评测体系位于 evaluation/ 目录下：
 
 - metrics.py: Recall@k、MRR、Precision 指标计算
-- questions.json: 20 个 QA 对，覆盖所有笔记主题
+- questions.json: 30 个 QA 对，覆盖所有笔记主题
 - runner.py: 评测运行器，对比基线和优化版
 
-### 20 个 QA 对
+### 30 个 QA 对
 
 基于 data/ 目录下的 11 篇技术笔记，编制了覆盖以下主题的问题：
 
@@ -162,7 +162,7 @@ evaluation/runner.py 提供了完整的评测管线，可以对比基线（纯�
 | 查询策略 | 单个问题 | 支持 Multi-Query 改写 |
 | 排序策略 | Cosine相似度 | 关键词重叠重排序 |
 | 评测能力 | 无 | 有（20 QA pairs + 3 指标） |
-| 知识库规模 | 1-2 篇笔记 | 11 篇笔记，43 个片段 |
+| 知识库规模 | 1-2 篇笔记 | 24 篇 Markdown 文档，344 个片段 |
 
 ---
 

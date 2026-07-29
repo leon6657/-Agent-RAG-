@@ -1,4 +1,4 @@
-﻿# RAG 知识库 — 四阶段演进项目
+# RAG 知识库 — 四阶段演进项目
 
 > 从零搭建的 Markdown 笔记 RAG 系统，经历四阶段演进：最小原型 → 优化检索 → Agent 智能体 → 工程化闭环。
 > 完整解决了 ChromaDB 兼容性、LangChain 导入冲突、Agent 决策逻辑、联网搜索等关键技术难题。
@@ -13,7 +13,7 @@
 | -------------- | ------------------------ | --------------------------- |
 | **LLM**        | DeepSeek Chat (API)      | 问答生成 + 联网搜索         |
 | **Embedding**  | BAAI/bge-small-zh-v1.5   | 中文语义向量化              |
-| **向量存储**   | numpy + JSON             | 余弦相似度搜索（43 个片段） |
+| **向量存储**   | numpy + JSON             | 余弦相似度搜索（344 个片段） |
 | **Agent 框架** | LangChain LCEL           | 检索链 + LLM 调用           |
 | **状态图**     | LangGraph                | Agent 有向状态图            |
 | **Web 服务**   | FastAPI + Uvicorn        | REST API + 聊天界面         |
@@ -49,7 +49,7 @@ graph TD
 
 ### 1. 检索优化（Phase 2）
 
-**Recall@4 从 0.350 提升到 0.575（+64%）**
+**Baseline Recall@4 = 1.000，Optimized Recall@4 = 1.000，Optimized MRR = 0.944**
 
 - 引入 BM25 混合检索
 - 关键词重排序
@@ -111,7 +111,7 @@ rag-project/
 ├── static/index.html             # Web 聊天界面
 ├── api.py                        # FastAPI 服务
 ├── main.py                       # CLI 入口
-├── vector_store.json             # 43 个文档片段
+├── vector_store.json             # 344 个文档片段
 ├── USAGE.md                      # 使用说明
 └── docs/                         # 设计文档
 ```
@@ -142,7 +142,7 @@ python main.py --serve     # Web 服务（浏览器打开 http://localhost:8000�
 
 ```bash
 phase1-minimal-rag       # 最小 RAG
-phase2-optimized-rag     # 优化检索（Recall +64%）
+phase2-optimized-rag     # 优化检索（Recall@4 = 1.000）
 phase3-agent             # Agent 智能体
 phase4-project-closure   # 工程化闭环
 ```

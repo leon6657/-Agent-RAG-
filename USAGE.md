@@ -1,4 +1,4 @@
-﻿# RAG 知识库 — 完整使用说明
+# RAG 知识库 — 完整使用说明
 
 > 更新时间：Phase 4 项目闭环
 
@@ -112,7 +112,7 @@ curl -X POST http://localhost:8000/chat \
 ```bash
 curl -X POST http://localhost:8000/ingest
 
-# 返回：{"chunks": 43, "status": "ok"}
+# 返回：{"chunks": N, "status": "ok"}，N 表示本次处理的 chunk 数
 ```
 
 **PowerShell 的调用方式：**

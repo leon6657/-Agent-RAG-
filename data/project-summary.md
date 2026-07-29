@@ -1,4 +1,4 @@
-﻿# RAG 知识库 — 四阶段演进总结
+# RAG 知识库 — 四阶段演进总结
 
 > 从零搭建一个以 Markdown 笔记为知识库的 RAG 系统，逐步优化检索、加入 Agent、引入联网搜索。
 > 完整记录了所有踩过的坑和对应的解决方案。
@@ -22,11 +22,11 @@ rag-project/
 │   ├── memory.py               # 对话记忆（滑动窗口 5 轮）
 │   └── agent.py                # Agent（知识库 → 联网搜索 → 自由对话）
 ├── evaluation/
-│   ├── questions.json          # 20 个 QA 对
+│   ├── questions.json          # 30 个 QA 对
 │   ├── metrics.py              # Recall@k / MRR / Precision
 │   └── runner.py               # 评测运行 + 对比报告
 ├── main.py                     # CLI 入口（--ingest / --query / --chat / --serve）
-├── vector_store.json           # 43 个文档片段（已嵌入）
+├── vector_store.json           # 344 个文档片段（当前索引）
 └── .hf_cache/                  # BGE 模型缓存（离线可用）
 ```
 
@@ -50,7 +50,7 @@ rag-project/
 - Multi-Query 查询改写（`query_rewriter.py`）
 - 评测体系（`evaluation/`）
 
-**评测结果：** Recall@4 从 0.350 提升到 0.575（+64%）
+**评测结果：** Baseline Recall@4 = 1.000，Optimized Recall@4 = 1.000，Optimized MRR = 0.944
 
 ### Phase 3：Agent
 
