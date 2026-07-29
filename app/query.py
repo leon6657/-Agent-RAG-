@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from app import store
 from app.chain import build_llm
 from app.config import config
-from app.ingest import build_embeddings
+from app.runtime import embed_query_cached
 
 
 NO_CONTEXT_ANSWER = (
@@ -38,8 +38,7 @@ ANSWER_STYLE_INSTRUCTIONS = (
 def _retrieve_docs(query: str):
     if store.count() == 0:
         raise ValueError("Vector store is empty. Run 'python main.py --ingest' first.")
-    emb = build_embeddings()
-    vector = emb.embed_query(query)
+    vector = embed_query_cached(query)
     return store.search_cached(vector, k=config.retrieval_top_k)
 
 

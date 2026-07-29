@@ -3,7 +3,7 @@
 from datetime import date
 import json
 
-from app.ingest import build_embeddings
+from app.runtime import embed_query_cached
 from app.memory import SimpleMemory
 from app.config import config
 from app import store
@@ -74,8 +74,7 @@ def _search_kb(query: str) -> str:
 
 
 def _has_relevant(query: str) -> bool:
-    emb = build_embeddings()
-    vec = emb.embed_query(query)
+    vec = embed_query_cached(query)
     return store.search_top_score(vec) >= _SEARCH_THRESHOLD
 
 

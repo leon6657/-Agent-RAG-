@@ -6,9 +6,9 @@
 
 ### 如何使用demo
 
-（由于使用免费云服务器，CPU 推理 embedding 会慢很多。尤其每次提问都要先把问题转成 embedding，再做检索，然后再请求LLM生成答案。
+（由于使用免费云服务器，CPU 推理 embedding 会比本地慢。项目已加入启动预热、embedding 模型复用和问题向量缓存，但 Render 免费实例休眠后首次访问仍可能需要等待一段时间。
 
-实际使用时感觉模型回复存在延迟还请谅解，本人后续会对其进行预热 embedding优化。也可以copy代码本地部署，十分感谢！
+如果首次提问较慢，可以先访问 `https://rag-workbench-demo.onrender.com/warmup` 触发预热，再回到主页面使用。也可以 copy 代码到本地部署体验，十分感谢！
 
 添加知识库文件、重新建库、修改配置等功能暂时无法直接支持demo演示，可以进行本地部署进行体验。）
 
@@ -79,6 +79,12 @@ http://localhost:8000
 ```
 
 Docker 镜像会在构建阶段执行 `python main.py --ingest`，因此部署后的 Demo 会自带固定知识库索引。更详细的部署说明见 [docs/deployment-demo.md](docs/deployment-demo.md)。
+
+部署后可访问以下地址手动预热运行时：
+
+```text
+http://localhost:8000/warmup
+```
 
 ## 项目速览
 

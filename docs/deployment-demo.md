@@ -58,6 +58,37 @@ http://localhost:8000/health
 
 Render 会根据仓库根目录的 `Dockerfile` 构建镜像。构建过程中会自动运行 `python main.py --ingest`。
 
+## 免费实例预热
+
+Render 免费实例在空闲后可能休眠。重新唤醒时，服务需要重新加载 Python 应用、向量库和 embedding 模型，因此首次提问会比后续提问慢。
+
+项目提供了运行时预热接口：
+
+```text
+https://你的域名/warmup
+```
+
+例如：
+
+```text
+https://rag-workbench-demo.onrender.com/warmup
+```
+
+该接口会提前加载 embedding 模型和向量库缓存。部署后演示前可以先访问一次 `/warmup`，再回到主页提问。
+
+接口返回示例：
+
+```json
+{
+  "status": "ok",
+  "embedding_model": "ready",
+  "vector_store": "ready",
+  "vector_count": 83
+}
+```
+
+这不能消除 Render 免费实例的冷启动，但可以避免用户第一次提问时才触发模型加载。
+
 ## Railway 部署
 
 1. 在 Railway 新建 Project。

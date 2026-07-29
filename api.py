@@ -2,6 +2,8 @@
 
 import json
 import os
+import threading
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 from fastapi import FastAPI
@@ -14,7 +16,25 @@ from app.config import config
 
 ROOT_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="RAG Knowledge Base API")
+
+def _background_warmup():
+    try:
+        from app.runtime import warmup_runtime
+        warmup_runtime()
+    except Exception:
+        pass
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if os.getenv("RAG_AUTO_WARMUP", "1") == "0":
+        yield
+        return
+    threading.Thread(target=_background_warmup, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="RAG Knowledge Base API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -31,6 +51,14 @@ async def index():
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "phase4"}
+
+
+@app.get("/warmup")
+@app.post("/warmup")
+async def warmup():
+    from app.runtime import warmup_runtime
+    result = warmup_runtime()
+    return {"status": "ok", **result}
 
 
 @app.get("/reports")
