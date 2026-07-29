@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from langchain_core.documents import Document
 
 import api
 
@@ -76,3 +77,29 @@ def test_chat_stream_endpoint_returns_ndjson_events(monkeypatch):
     assert '"mode": "agent"' in lines[0]
     assert '"text": "Agent "' in lines[1]
     assert '"event": "done"' in lines[-1]
+
+
+def test_agent_stream_returns_sources_when_using_kb(monkeypatch):
+    doc = Document(
+        page_content="LCEL is LangChain Expression Language.",
+        metadata={
+            "source": "data/lcel.md",
+            "filename": "lcel.md",
+            "score": 0.86,
+        },
+    )
+
+    monkeypatch.setattr("app.agent.store.count", lambda: 1)
+    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
+    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
+    monkeypatch.setattr("app.agent._stream_llm", lambda prompt, variables: iter(["LCEL answer"]))
+
+    client = TestClient(api.app)
+    response = client.post("/chat/stream", json={"question": "LCEL 是什么？"})
+
+    assert response.status_code == 200
+    lines = response.text.strip().splitlines()
+    assert '"mode": "agent_kb"' in lines[0]
+    assert '"filename": "lcel.md"' in lines[0]
+    assert '"score": 0.86' in lines[0]
+    assert '"preview": "LCEL is LangChain Expression Language."' in lines[0]

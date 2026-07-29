@@ -70,12 +70,20 @@ def _stream_llm(prompt_template: str, variables: dict):
     yield from chain.stream(variables)
 
 
-def _search_kb(query: str) -> str:
-    from app.query import _search
+def _search_kb(query: str) -> dict:
+    from app.query import _format_context, _source_payload, _top_score
     try:
-        return _search(query)
+        if store.count() == 0:
+            return {"context": "", "sources": [], "top_score": None}
+        vector = embed_query_cached(query)
+        docs = store.search_cached(vector, k=config.retrieval_top_k)
+        return {
+            "context": _format_context(docs),
+            "sources": _source_payload(docs),
+            "top_score": _top_score(docs),
+        }
     except ValueError:
-        return ""
+        return {"context": "", "sources": [], "top_score": None}
 
 
 def _has_relevant(query: str) -> bool:
@@ -153,7 +161,8 @@ def chat(message: str) -> str:
     today = date.today().isoformat()
     history = memory.get_history()
 
-    context = _search_kb(message)
+    kb = _search_kb(message)
+    context = kb["context"]
     if context:
         if len(message) >= 4 and message[:4] not in context:
             context = ''
@@ -171,13 +180,19 @@ def chat_stream_events(message: str):
     today = date.today().isoformat()
     history = memory.get_history()
 
-    context = _search_kb(message)
+    kb = _search_kb(message)
+    context = kb["context"]
     if context:
         if len(message) >= 4 and message[:4] not in context:
             context = ""
 
     mode = "agent_kb" if context else "agent"
-    yield {"event": "meta", "mode": mode, "sources": [], "top_score": None}
+    yield {
+        "event": "meta",
+        "mode": mode,
+        "sources": kb["sources"] if context else [],
+        "top_score": kb["top_score"] if context else None,
+    }
 
     response_parts = []
     try:
