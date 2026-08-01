@@ -1,18 +1,35 @@
 # RAG 知识库系统（四阶段演进版）
 
+## 在线 Demo
+
+```text
+阿里云 ECS Demo（推荐）：http://8.137.183.225:8001
+Render 备用 Demo：https://rag-workbench-demo.onrender.com
+```
+
+首次访问或容器重启后，可以先访问以下地址触发预热：
+
+```text
+http://8.137.183.225:8001/warmup
+```
+
+阿里云部署过程中遇到的服务器选型、Docker 镜像上传、HuggingFace 模型缓存、端口放行和性能排查问题，已经整理在 [docs/aliyun-deployment-review.md](docs/aliyun-deployment-review.md)。
+
 ## 快速体验
 
 这是一个面向个人知识库问答场景的 RAG-Agent Workbench：用户可以在 Web 页面中提问，系统会基于 `data/` 目录中的 Markdown 知识库进行检索增强回答，并在页面中展示回答来源、相似度、评测报告、知识库文件、日志和历史对话。
 
 ### 如何使用demo
 
-（由于使用免费云服务器，CPU 推理 embedding 会比本地慢。项目已加入启动预热、embedding 模型复用和问题向量缓存，但 Render 免费实例休眠后首次访问仍可能需要等待一段时间。
+（Render备用demo由于使用免费云服务器，CPU 推理 embedding 会比本地慢。项目已加入启动预热、embedding 模型复用和问题向量缓存，但 Render 免费实例休眠后首次访问仍可能需要等待一段时间。如果首次提问较慢，可以先访问 `https://rag-workbench-demo.onrender.com/warmup` 触发预热，再回到主页面使用。也可以 copy 代码到本地部署体验，十分感谢！添加知识库文件、重新建库、修改配置等功能暂时无法直接支持demo演示，可以进行本地部署进行体验。）
 
-如果首次提问较慢，可以先访问 `https://rag-workbench-demo.onrender.com/warmup` 触发预热，再回到主页面使用。也可以 copy 代码到本地部署体验，十分感谢！
+项目已经部署到公网，只需要打开下面阿里云 Demo 链接( 推荐 )：
 
-添加知识库文件、重新建库、修改配置等功能暂时无法直接支持demo演示，可以进行本地部署进行体验。）
+```text
+http://8.137.183.225:8001
+```
 
-项目已经部署到公网，只需要打开 Demo 链接：
+或Render链接：
 
 ```text
 https://rag-workbench-demo.onrender.com

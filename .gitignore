@@ -38,6 +38,8 @@ Thumbs.db
 tmp/
 temp/
 *.txt
+*.tar
+.dockerignore.bak
 !requirements.txt
 
 .ingest_state.json

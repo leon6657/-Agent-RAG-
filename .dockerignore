@@ -26,7 +26,6 @@ chroma_db/
 chroma_db_test/
 vector_store.json
 
-.hf_cache/
-.model_cache/
 
 docs/superpowers/new plans/
+*.tar
