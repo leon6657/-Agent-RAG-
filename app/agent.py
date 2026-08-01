@@ -2,6 +2,7 @@
 
 from datetime import date
 import json
+from time import perf_counter
 
 from app.runtime import embed_query_cached
 from app.memory import SimpleMemory
@@ -177,10 +178,14 @@ def chat(message: str) -> str:
 
 
 def chat_stream_events(message: str):
+    total_started = perf_counter()
     today = date.today().isoformat()
     history = memory.get_history()
 
+    yield {"event": "status", "stage": "retrieving", "message": "正在检索知识库..."}
+    retrieval_started = perf_counter()
     kb = _search_kb(message)
+    retrieval_ms = int((perf_counter() - retrieval_started) * 1000)
     context = kb["context"]
     if context:
         if len(message) >= 4 and message[:4] not in context:
@@ -192,9 +197,16 @@ def chat_stream_events(message: str):
         "mode": mode,
         "sources": kb["sources"] if context else [],
         "top_score": kb["top_score"] if context else None,
+        "retrieval_ms": retrieval_ms,
     }
+    if context:
+        status_text = f"已找到 {len(kb['sources'])} 个来源，正在生成回答..."
+    else:
+        status_text = "知识库未命中，正在使用 Agent 生成回答..."
+    yield {"event": "status", "stage": "generating", "message": status_text}
 
     response_parts = []
+    generation_started = perf_counter()
     try:
         if context:
             chunks = _stream_llm(
@@ -211,10 +223,20 @@ def chat_stream_events(message: str):
         response = chat(message)
         response_parts = [response]
         yield {"event": "token", "text": response}
-        yield {"event": "done"}
+        yield {
+            "event": "done",
+            "retrieval_ms": retrieval_ms,
+            "generation_ms": int((perf_counter() - generation_started) * 1000),
+            "total_ms": int((perf_counter() - total_started) * 1000),
+        }
         return
 
     response = "".join(response_parts)
     memory.add_user(message)
     memory.add_assistant(response)
-    yield {"event": "done"}
+    yield {
+        "event": "done",
+        "retrieval_ms": retrieval_ms,
+        "generation_ms": int((perf_counter() - generation_started) * 1000),
+        "total_ms": int((perf_counter() - total_started) * 1000),
+    }

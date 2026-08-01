@@ -38,8 +38,8 @@ def test_workbench_page_offers_enough_example_questions():
 def test_workbench_page_keeps_existing_api_contract():
     html = Path("static/index.html").read_text(encoding="utf-8")
 
-    assert 'fetch("/query/stream"' in html
-    assert 'fetch("/chat/stream"' in html
+    assert 'sendStream("/query/stream"' in html
+    assert 'sendStream("/chat/stream"' in html
     assert 'fetch("/" + mode' in html
     assert "JSON.stringify({question: q})" in html
     assert "data.sources" in html
@@ -58,6 +58,12 @@ def test_workbench_page_streams_and_formats_answers():
     assert "response.body.getReader()" in html
     assert "TextDecoder" in html
     assert "appendAssistantToken" in html
+    assert "setAssistantStatus" in html
+    assert "handleStreamEvent" in html
+    assert "buildTimingText" in html
+    assert "retrieval_ms" in html
+    assert "generation_ms" in html
+    assert "total_ms" in html
     assert "function renderAnswerHtml" in html
     assert "<strong>$1</strong>" in html
     assert "function renderMarkdownTable" in html
@@ -113,3 +119,35 @@ def test_workbench_layout_uses_fixed_chat_and_scrollable_monitor_cards():
     assert ".monitor-card{height:260px;display:grid;grid-template-rows:auto minmax(0,1fr);" in html
     assert ".monitor-scroll{height:100%;max-height:none;overflow:auto;" in html
     assert ".file-list,.history-list,.config-list{min-height:0;overflow:auto;" in html
+
+
+def test_workbench_mobile_layout_prioritizes_chat_without_touching_desktop_grid():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert "@media (max-width:640px)" in html
+    assert ".app-shell{width:100%;max-width:100vw;height:100dvh;overflow:hidden;padding:10px;gap:10px;grid-template-columns:minmax(0,1fr);" in html
+    assert ".chat-panel{order:1;min-height:calc(100dvh - 20px);" in html
+    assert ".chat-panel,.mobile-home-tools,.messages,.composer{min-width:0}" in html
+    assert ".mobile-menu-btn" in html
+    assert 'class="mobile-home-tools"' in html
+    assert 'class="mobile-quick-examples"' in html
+    assert 'data-mobile-home="true"' in html
+    assert ".example-list{max-height:720px;" in html
+    assert ".mobile-quick-examples .example-btn{flex:0 0 150px;" in html
+    assert ".mobile-drawer .control-panel > .section:first-of-type{display:none}" in html
+    assert ".mobile-drawer .hint{display:none}" in html
+    assert ".mobile-drawer .evidence-panel{display:flex;flex-direction:column;max-height:70vh;overflow-y:auto;" in html
+    assert ".mobile-drawer .source-list{min-height:120px;max-height:360px;overflow-y:auto;" in html
+    assert html.count('class="example-btn" data-question=') >= 20
+    assert "overflow-x:hidden" in html
+    assert "height:calc(100dvh - 20px)" in html
+    assert "padding-bottom:calc(10px + env(safe-area-inset-bottom))" in html
+    assert "scroll-snap-type:x proximity" in html
+    assert "选择上方示例，或输入自己的问题。菜单内有更多功能，证据框会同步更新回答来源和可信状态。" in html
+    assert 'id="mobileMenuBtn"' in html
+    assert 'id="mobileDrawerOverlay"' in html
+    assert "body.mobile-drawer-open" in html
+    assert "function openMobileDrawer" in html
+    assert "function closeMobileDrawer" in html
+    assert "快输入你想了解的问题吧" in html
+    assert ".app-shell{min-height:100vh;display:grid;grid-template-columns:280px minmax(420px,1fr) 360px;" in html

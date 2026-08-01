@@ -50,9 +50,22 @@ button{border:0;cursor:pointer}
 .status-pill.bad{background:var(--red-soft);border-color:#fecaca;color:var(--red)}
 .status-pill.bad .status-dot{background:var(--red)}
 .messages{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:18px;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%)}
-.empty-state{max-width:520px;margin:auto;text-align:center;color:var(--muted)}
+.empty-state{width:min(720px,92%);margin:auto;text-align:center;color:var(--muted)}
 .empty-state h3{margin-bottom:8px;color:var(--text);font-size:22px}
-.empty-state p{font-size:14px;line-height:1.6}
+.empty-state p{max-width:640px;margin:0 auto;font-size:14px;line-height:1.7;text-wrap:pretty}
+.mode-guide{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px auto 0;max-width:640px;text-align:left}
+.mode-guide-item{padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.mode-guide-item strong{display:block;margin-bottom:5px;color:var(--text);font-size:13px}
+.mode-guide-item span{display:block;color:var(--muted);font-size:12px;line-height:1.55}
+.mobile-menu-btn{display:none}
+.mobile-drawer-overlay,.mobile-drawer{display:none}
+.mobile-drawer-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border-bottom:1px solid var(--line)}
+.mobile-drawer-header strong{font-size:16px}
+.mobile-drawer-close{height:32px;padding:0 10px;border-radius:8px;background:var(--soft);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:750}
+.mobile-drawer-content{min-height:0;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+.mobile-home-tools{display:none}
+.mobile-quick-examples{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.mobile-quick-examples .example-btn{flex:0 0 150px;white-space:nowrap;padding:8px 10px;scroll-snap-align:start;text-align:center}
 .message{display:flex;flex-direction:column;gap:6px;max-width:min(760px,86%)}
 .message.user{align-self:flex-end;align-items:flex-end}
 .message.assistant{align-self:flex-start}
@@ -126,12 +139,69 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
   .monitor-grid{grid-template-columns:1fr}
 }
 @media (max-width:640px){
-  .app-shell{padding:10px;gap:10px}
-  .chat-header{align-items:flex-start;flex-direction:column}
-  .status-row{justify-content:flex-start}
-  .message{max-width:96%}
-  .composer-box{grid-template-columns:1fr}
-  .send-btn{width:100%}
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{background:#fff}
+  .app-shell{width:100%;max-width:100vw;height:100dvh;overflow:hidden;padding:10px;gap:10px;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+  .panel{box-shadow:none}
+  .chat-panel,.mobile-home-tools,.messages,.composer{min-width:0}
+  .chat-panel{order:1;min-height:calc(100dvh - 20px);height:calc(100dvh - 20px);max-height:none;grid-template-rows:auto auto minmax(0,1fr) auto}
+  .control-panel{order:2;min-height:0;height:auto;max-height:none;padding:12px;gap:12px}
+  .evidence-panel{order:3;min-height:0;height:auto;max-height:none;grid-template-rows:auto auto auto}
+  .monitor-panel{order:4}
+  .mobile-menu-btn{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 12px;border-radius:8px;background:var(--blue);color:#fff;font-size:12px;font-weight:750}
+  .mobile-drawer-overlay{display:block;position:fixed;inset:0;z-index:80;background:rgba(15,23,42,.36);opacity:0;pointer-events:none;transition:opacity .18s ease}
+  .mobile-drawer{display:flex;position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(88vw,380px);background:#fff;border-left:1px solid var(--line);box-shadow:-18px 0 40px rgba(15,23,42,.18);transform:translateX(105%);transition:transform .2s ease;flex-direction:column}
+  body.mobile-drawer-open{overflow:hidden}
+  body.mobile-drawer-open .mobile-drawer-overlay{opacity:1;pointer-events:auto}
+  body.mobile-drawer-open .mobile-drawer{transform:translateX(0)}
+  .mobile-drawer .control-panel,.mobile-drawer .evidence-panel,.mobile-drawer .monitor-panel{position:static;display:flex;width:auto;height:auto;min-height:0;max-height:none;border-radius:8px;box-shadow:none}
+  .mobile-drawer .control-panel > .section:first-of-type{display:none}
+  .mobile-drawer .hint{display:none}
+  .mobile-drawer .evidence-panel{display:flex;flex-direction:column;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .mobile-drawer .source-list{min-height:120px;max-height:360px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .mobile-drawer .monitor-panel{display:block}
+  .brand{padding-bottom:10px}
+  .brand h1{font-size:18px}
+  .brand p,.hint{font-size:12px}
+  .metric-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .metric{padding:8px 6px}
+  .metric .label{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric .value{font-size:15px}
+  .example-list{max-height:720px;overflow:auto}
+  .example-btn{padding:9px 10px;font-size:13px}
+  .hint{margin-top:0}
+  .chat-header{align-items:flex-start;flex-direction:column;padding:12px}
+  .chat-title h2{font-size:15px}
+  .chat-title p{font-size:11px;line-height:1.45}
+  .status-row{justify-content:flex-start;gap:6px}
+  .status-pill{height:26px;padding:0 8px;font-size:11px}
+  .mobile-home-tools{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);background:#fff}
+  .mobile-home-tools .mode-switch{grid-template-columns:1fr 1fr}
+  .mobile-home-tools .mode-btn{height:34px;font-size:12px}
+  .messages{padding:12px;gap:10px}
+  .empty-state{width:100%}
+  .empty-state h3{font-size:20px}
+  .empty-state p{font-size:13px;line-height:1.6}
+  .mode-guide{grid-template-columns:1fr;margin-top:12px;gap:8px}
+  .mode-guide-item{padding:10px}
+  .message{max-width:98%}
+  .bubble{padding:10px 11px;font-size:14px;line-height:1.62}
+  .message-meta{font-size:10px;line-height:1.35;flex-wrap:wrap}
+  .composer{padding:10px;border-top:1px solid var(--line);padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  .composer-box{grid-template-columns:1fr;gap:8px}
+  textarea{min-height:46px;max-height:112px}
+  .send-btn{width:100%;height:42px}
+  .evidence-header{padding:12px}
+  .trust-card{margin:10px 12px;padding:12px}
+  .trust-state{font-size:16px}
+  .source-list{max-height:220px;overflow:auto;padding:0 12px 12px}
+  .source-card{padding:10px}
+  .monitor-panel{padding:12px}
+  .monitor-header{align-items:flex-start;flex-direction:column;gap:10px}
+  .monitor-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .monitor-actions .primary{grid-column:1 / -1}
+  .monitor-card{height:220px;padding:12px}
+  .list-row{padding:8px;font-size:12px}
 }
 </style>
 </head>
@@ -179,7 +249,7 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
         <button class="example-btn" data-question="这个知识库里有没有部署到云服务器的步骤？" type="button">云服务器部署步骤</button>
       </div>
     </section>
-    <div class="hint">&#20005;&#26684; RAG &#21644; Agent &#37117;&#20250;&#27969;&#24335;&#36755;&#20986;&#12290;&#21491;&#20391;&#20250;&#23637;&#31034;&#26469;&#28304;&#12289;&#27169;&#24335;&#21644;&#32622;&#20449;&#29366;&#24577;&#12290;</div>
+    <div class="hint">可在上方切换模式：严格 RAG 只依据知识库回答；Agent 会先查知识库，未命中时可开放生成。</div>
   </aside>
 
   <section class="panel chat-panel" id="chatPanel">
@@ -189,19 +259,46 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
         <p id="modeDescription">&#22522;&#20110;&#26412;&#22320; Markdown &#30693;&#35782;&#24211;&#30340;&#27969;&#24335;&#22238;&#31572;&#12290;</p>
       </div>
       <div class="status-row">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button">菜单</button>
         <div class="status-pill" id="modeState"><span class="status-dot"></span><span>&#20005;&#26684; RAG</span></div>
         <div class="status-pill" id="scoreState"><span class="status-dot"></span><span>top score: n/a</span></div>
       </div>
     </header>
+    <div class="mobile-home-tools" data-mobile-home="true">
+      <div class="mode-switch" role="group" aria-label="mobile answer mode">
+        <button class="mode-btn active" data-mode="query" type="button">严格 RAG</button>
+        <button class="mode-btn" data-mode="chat" type="button">Agent</button>
+      </div>
+      <div class="mobile-quick-examples" aria-label="快捷示例">
+        <button class="example-btn" data-question="请介绍一下这个 RAG-Agent 项目的核心功能。" type="button">项目核心功能</button>
+        <button class="example-btn" data-question="严格 RAG 和 Agent 模式有什么区别？" type="button">模式区别</button>
+        <button class="example-btn" data-question="如何把这个项目部署到公网？" type="button">公网部署</button>
+        <button class="example-btn" data-question="dict.get(key, default) 的作用是什么？" type="button">Python 示例</button>
+        <button class="example-btn" data-question="这个项目的技术栈有哪些？" type="button">技术栈</button>
+        <button class="example-btn" data-question="这个项目如何构建知识库？" type="button">知识库构建</button>
+        <button class="example-btn" data-question="为什么模型回答会比较慢？" type="button">速度原因</button>
+        <button class="example-btn" data-question="如何提升 RAG 检索准确率？" type="button">检索优化</button>
+      </div>
+    </div>
     <div class="messages" id="messages">
       <div class="empty-state" id="emptyState">
         <h3>&#20174;&#19968;&#20010;&#38382;&#39064;&#24320;&#22987;</h3>
-        <p>&#36873;&#25321;&#24038;&#20391;&#31034;&#20363;&#65292;&#25110;&#36755;&#20837;&#20320;&#33258;&#24049;&#30340;&#38382;&#39064;&#12290;&#22238;&#31572;&#29983;&#25104;&#26102;&#20250;&#36880;&#27493;&#26174;&#31034;&#65292;&#35777;&#25454;&#38754;&#26495;&#20250;&#21516;&#27493;&#21047;&#26032;&#12290;</p>
+        <p>选择上方示例，或输入自己的问题。菜单内有更多功能，证据框会同步更新回答来源和可信状态。</p>
+        <div class="mode-guide" aria-label="模式说明">
+          <div class="mode-guide-item">
+            <strong>严格 RAG</strong>
+            <span>只根据知识库内容回答；证据不足时会拒答，更适合验证项目资料。</span>
+          </div>
+          <div class="mode-guide-item">
+            <strong>Agent 模式</strong>
+            <span>先检索知识库，未命中时可开放生成，更适合延展性问题和自由问答。</span>
+          </div>
+        </div>
       </div>
     </div>
     <footer class="composer">
       <div class="composer-box">
-        <textarea id="input" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+        <textarea id="input" rows="1" placeholder="快输入你想了解的问题吧"></textarea>
         <button class="send-btn" id="sendBtn" type="button">&#21457;&#36865;</button>
       </div>
     </footer>
@@ -262,6 +359,14 @@ textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)
     </div>
   </section>
 </main>
+<div class="mobile-drawer-overlay" id="mobileDrawerOverlay" aria-hidden="true"></div>
+<aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true" aria-label="移动端侧边栏">
+  <div class="mobile-drawer-header">
+    <strong>功能面板</strong>
+    <button class="mobile-drawer-close" id="mobileDrawerClose" type="button">关闭</button>
+  </div>
+  <div class="mobile-drawer-content" id="mobileDrawerContent"></div>
+</aside>
 
 <script>
 const input = document.getElementById("input");
@@ -288,9 +393,58 @@ const metricRecall = document.getElementById("metricRecall");
 const metricMrr = document.getElementById("metricMrr");
 const metricTopScore = document.getElementById("metricTopScore");
 const metricChunks = document.getElementById("metricChunks");
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const mobileDrawer = document.getElementById("mobileDrawer");
+const mobileDrawerOverlay = document.getElementById("mobileDrawerOverlay");
+const mobileDrawerClose = document.getElementById("mobileDrawerClose");
+const mobileDrawerContent = document.getElementById("mobileDrawerContent");
 let mode = "query";
 let history = [];
 const HISTORY_KEY = "ragWorkbenchHistory";
+const mobilePanelIds = ["controlPanel", "evidencePanel", "monitorPanel"];
+const mobilePanelSlots = new Map();
+
+function isMobileLayout() {
+  return window.matchMedia("(max-width:640px)").matches;
+}
+
+function ensureMobilePanelSlots() {
+  mobilePanelIds.forEach(id => {
+    if (mobilePanelSlots.has(id)) return;
+    const panel = document.getElementById(id);
+    if (!panel || !panel.parentNode) return;
+    const slot = document.createComment(id + "-slot");
+    panel.parentNode.insertBefore(slot, panel);
+    mobilePanelSlots.set(id, slot);
+  });
+}
+
+function syncMobileDrawer() {
+  ensureMobilePanelSlots();
+  const mobile = isMobileLayout();
+  mobilePanelIds.forEach(id => {
+    const panel = document.getElementById(id);
+    const slot = mobilePanelSlots.get(id);
+    if (!panel || !slot) return;
+    if (mobile) {
+      if (panel.parentNode !== mobileDrawerContent) mobileDrawerContent.appendChild(panel);
+    } else if (slot.parentNode && panel.parentNode !== slot.parentNode) {
+      slot.parentNode.insertBefore(panel, slot.nextSibling);
+    }
+  });
+  if (!mobile) closeMobileDrawer();
+}
+
+function openMobileDrawer() {
+  syncMobileDrawer();
+  document.body.classList.add("mobile-drawer-open");
+  mobileDrawer.setAttribute("aria-hidden", "false");
+}
+
+function closeMobileDrawer() {
+  document.body.classList.remove("mobile-drawer-open");
+  mobileDrawer.setAttribute("aria-hidden", "true");
+}
 
 function escapeHtml(text) {
   return (text || "")
@@ -471,11 +625,32 @@ function appendAssistantToken(message, token) {
   messages.scrollTop = messages.scrollHeight;
 }
 
+function setAssistantStatus(message, text) {
+  if (message.text) return;
+  message.bubble.textContent = text || "";
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function formatDuration(ms) {
+  if (typeof ms !== "number") return "n/a";
+  if (ms < 1000) return Math.max(0, Math.round(ms)) + "ms";
+  return (ms / 1000).toFixed(1) + "s";
+}
+
+function buildTimingText(meta) {
+  if (!meta || typeof meta.total_ms !== "number") return "";
+  return "\u68c0\u7d22 " + formatDuration(meta.retrieval_ms)
+    + " \u00b7 \u751f\u6210 " + formatDuration(meta.generation_ms)
+    + " \u00b7 \u603b\u8ba1 " + formatDuration(meta.total_ms);
+}
+
 function buildMetaText(meta) {
   if (!meta) return "Assistant";
   const parts = [meta.mode || "assistant"];
   if (typeof meta.top_score === "number") parts.push("top " + meta.top_score.toFixed(3));
   if (Array.isArray(meta.sources)) parts.push(meta.sources.length + " sources");
+  const timing = buildTimingText(meta);
+  if (timing) parts.push(timing);
   return parts.join(" | ");
 }
 
@@ -538,9 +713,17 @@ function setLoading(isLoading) {
 }
 
 async function sendStreaming(q) {
-  const assistant = createMessage("assistant streaming", "", {mode: "streaming"});
-  let meta = {mode: "rag", sources: []};
-  const response = await fetch("/query/stream", {
+  await sendStream("/query/stream", q, {mode: "rag", sources: []});
+}
+
+async function sendAgentStreaming(q) {
+  await sendStream("/chat/stream", q, {mode: "agent", sources: []});
+}
+
+async function sendStream(endpoint, q, initialMeta) {
+  const assistant = createMessage("assistant streaming", "", initialMeta);
+  let meta = initialMeta;
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({question: q})
@@ -561,60 +744,33 @@ async function sendStreaming(q) {
     for (const line of lines) {
       if (!line.trim()) continue;
       const event = JSON.parse(line);
-      if (event.event === "meta") {
-        meta = event;
-        assistant.row.textContent = buildMetaText(meta);
-        updateEvidence(meta);
-      } else if (event.event === "token") {
-        appendAssistantToken(assistant, event.text);
-      }
+      meta = handleStreamEvent(event, assistant, meta);
     }
   }
   if (buffer.trim()) {
     const event = JSON.parse(buffer);
-    if (event.event === "token") appendAssistantToken(assistant, event.text);
+    meta = handleStreamEvent(event, assistant, meta);
   }
   assistant.wrap.classList.remove("streaming");
   assistant.row.textContent = buildMetaText(meta);
   history.push({role:"assistant", text:assistant.text});
 }
 
-async function sendAgentStreaming(q) {
-  const assistant = createMessage("assistant streaming", "", {mode: "agent"});
-  let meta = {mode: "agent", sources: []};
-  const response = await fetch("/chat/stream", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({question: q})
-  });
-  if (!response.ok || !response.body) {
-    throw new Error("HTTP " + response.status);
+function handleStreamEvent(event, assistant, meta) {
+  if (event.event === "status") {
+    setAssistantStatus(assistant, event.message);
+  } else if (event.event === "meta") {
+    assistant.row.textContent = buildMetaText(event);
+    updateEvidence(event);
+    return event;
+  } else if (event.event === "token") {
+    appendAssistantToken(assistant, event.text);
+  } else if (event.event === "done") {
+    const nextMeta = Object.assign({}, meta, event);
+    assistant.row.textContent = buildMetaText(nextMeta);
+    return nextMeta;
   }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  while (true) {
-    const {value, done} = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, {stream: true});
-    const lines = buffer.split("\n");
-    buffer = lines.pop();
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      const event = JSON.parse(line);
-      if (event.event === "meta") {
-        meta = event;
-        assistant.row.textContent = buildMetaText(meta);
-        updateEvidence(meta);
-      } else if (event.event === "token") {
-        appendAssistantToken(assistant, event.text);
-      }
-    }
-  }
-  assistant.wrap.classList.remove("streaming");
-  assistant.row.textContent = buildMetaText(meta);
-  history.push({role:"assistant", text:assistant.text});
+  return meta;
 }
 
 async function sendStandard(q) {
@@ -779,6 +935,7 @@ document.querySelectorAll(".example-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     input.value = btn.dataset.question;
     input.focus();
+    if (isMobileLayout() && btn.closest("#mobileDrawer")) closeMobileDrawer();
   });
 });
 input.addEventListener("keydown", event => {
@@ -792,9 +949,14 @@ input.addEventListener("input", function() {
   this.style.height = Math.min(this.scrollHeight, 150) + "px";
 });
 sendBtn.addEventListener("click", () => send());
+mobileMenuBtn.addEventListener("click", openMobileDrawer);
+mobileDrawerClose.addEventListener("click", closeMobileDrawer);
+mobileDrawerOverlay.addEventListener("click", closeMobileDrawer);
+window.addEventListener("resize", syncMobileDrawer);
 toggleMonitorBtn.addEventListener("click", toggleMonitor);
 refreshMonitorBtn.addEventListener("click", loadMonitor);
 rebuildBtn.addEventListener("click", rebuildIndex);
+syncMobileDrawer();
 setMode("query");
 loadHistory();
 loadMonitor();

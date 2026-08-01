@@ -97,3 +97,41 @@ def test_ask_with_sources_does_not_duplicate_existing_source_line(monkeypatch):
 
     assert result["answer"].count("Sources:") == 1
     assert result["answer"].endswith("Sources: langchain.md")
+
+
+def test_ask_stream_events_reports_stage_and_timing(monkeypatch):
+    docs = [
+        Document(
+            page_content="RAG combines retrieval with generation.",
+            metadata={"filename": "rag.md", "score": 0.82},
+        )
+    ]
+
+    class FakeChain:
+        def __or__(self, other):
+            return self
+
+        def stream(self, payload):
+            assert "RAG combines retrieval" in payload["context"]
+            yield "RAG "
+            yield "answer"
+
+    class FakePrompt:
+        def __or__(self, other):
+            return FakeChain()
+
+    monkeypatch.setattr(query, "_retrieve_docs", lambda question: docs)
+    monkeypatch.setattr(query.ChatPromptTemplate, "from_template", lambda template: FakePrompt())
+    monkeypatch.setattr(query, "build_llm", lambda: object())
+    monkeypatch.setattr(query.config, "rag_min_score", 0.35)
+
+    events = list(query.ask_stream_events("What is RAG?"))
+
+    assert events[0] == {"event": "status", "stage": "retrieving", "message": "正在检索知识库..."}
+    assert events[1]["event"] == "meta"
+    assert events[1]["retrieval_ms"] >= 0
+    assert events[2] == {"event": "status", "stage": "generating", "message": "已找到 1 个来源，正在生成回答..."}
+    assert events[-1]["event"] == "done"
+    assert events[-1]["retrieval_ms"] >= 0
+    assert events[-1]["generation_ms"] >= 0
+    assert events[-1]["total_ms"] >= events[-1]["retrieval_ms"]

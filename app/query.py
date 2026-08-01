@@ -1,5 +1,7 @@
 """Query interface: ask questions against the RAG knowledge base."""
 
+from time import perf_counter
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -149,7 +151,11 @@ def ask_stream(question: str):
 
 
 def ask_stream_events(question: str):
+    total_started = perf_counter()
+    yield {"event": "status", "stage": "retrieving", "message": "正在检索知识库..."}
+    retrieval_started = perf_counter()
     docs = _retrieve_docs(question)
+    retrieval_ms = int((perf_counter() - retrieval_started) * 1000)
     top_score = _top_score(docs)
     sources = _source_payload(docs)
 
@@ -159,9 +165,16 @@ def ask_stream_events(question: str):
             "sources": sources,
             "mode": "no_context",
             "top_score": top_score,
+            "retrieval_ms": retrieval_ms,
         }
         yield {"event": "token", "text": NO_CONTEXT_ANSWER}
-        yield {"event": "done"}
+        total_ms = int((perf_counter() - total_started) * 1000)
+        yield {
+            "event": "done",
+            "retrieval_ms": retrieval_ms,
+            "generation_ms": 0,
+            "total_ms": total_ms,
+        }
         return
 
     yield {
@@ -169,6 +182,12 @@ def ask_stream_events(question: str):
         "sources": sources,
         "mode": "rag",
         "top_score": top_score,
+        "retrieval_ms": retrieval_ms,
+    }
+    yield {
+        "event": "status",
+        "stage": "generating",
+        "message": f"已找到 {len(sources)} 个来源，正在生成回答...",
     }
 
     context = _format_context(docs)
@@ -182,13 +201,21 @@ def ask_stream_events(question: str):
     )
     chain = prompt | build_llm() | StrOutputParser()
     answer_parts = []
+    generation_started = perf_counter()
     for chunk in chain.stream({"context": context, "question": question, "style": ANSWER_STYLE_INSTRUCTIONS}):
         answer_parts.append(chunk)
         yield {"event": "token", "text": chunk}
+    generation_ms = int((perf_counter() - generation_started) * 1000)
 
     answer = "".join(answer_parts)
     citation_text = _append_citations(answer, sources)
     suffix = citation_text[len(answer):]
     if suffix:
         yield {"event": "token", "text": suffix}
-    yield {"event": "done"}
+    total_ms = int((perf_counter() - total_started) * 1000)
+    yield {
+        "event": "done",
+        "retrieval_ms": retrieval_ms,
+        "generation_ms": generation_ms,
+        "total_ms": total_ms,
+    }

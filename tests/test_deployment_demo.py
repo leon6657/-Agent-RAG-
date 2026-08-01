@@ -6,7 +6,8 @@ def test_dockerfile_builds_fixed_knowledge_demo():
 
     assert "FROM python:3.11-slim" in dockerfile
     assert "pip install --no-cache-dir -r requirements.txt" in dockerfile
-    assert "python main.py --ingest" in dockerfile
+    assert "test -s vector_store.json" in dockerfile
+    assert "test -s .ingest_state.json" in dockerfile
     assert "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}" in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "build-essential" not in dockerfile

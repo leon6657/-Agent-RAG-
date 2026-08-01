@@ -99,7 +99,12 @@ def test_agent_stream_returns_sources_when_using_kb(monkeypatch):
 
     assert response.status_code == 200
     lines = response.text.strip().splitlines()
-    assert '"mode": "agent_kb"' in lines[0]
-    assert '"filename": "lcel.md"' in lines[0]
-    assert '"score": 0.86' in lines[0]
-    assert '"preview": "LCEL is LangChain Expression Language."' in lines[0]
+    assert '"stage": "retrieving"' in lines[0]
+    assert '"mode": "agent_kb"' in lines[1]
+    assert '"filename": "lcel.md"' in lines[1]
+    assert '"score": 0.86' in lines[1]
+    assert '"preview": "LCEL is LangChain Expression Language."' in lines[1]
+    assert '"stage": "generating"' in lines[2]
+    assert '"retrieval_ms"' in lines[-1]
+    assert '"generation_ms"' in lines[-1]
+    assert '"total_ms"' in lines[-1]
