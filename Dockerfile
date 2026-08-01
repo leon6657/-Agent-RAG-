@@ -17,8 +17,8 @@ ENV TRANSFORMERS_OFFLINE=1
 
 COPY . .
 
-# Fixed knowledge-base demo: build the index from data/ during image build.
-RUN python main.py --ingest
+# Fixed knowledge-base demo: use the locally built vector store copied into the image.
+RUN test -s vector_store.json && test -s .ingest_state.json && test -d .hf_cache
 
 EXPOSE 8000
 

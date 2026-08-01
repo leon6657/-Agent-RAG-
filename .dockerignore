@@ -20,11 +20,9 @@ tmp/
 temp/
 .cache/
 .prompts/
-.ingest_state.json
 
 chroma_db/
 chroma_db_test/
-vector_store.json
 
 
 docs/superpowers/new plans/
