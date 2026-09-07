@@ -108,3 +108,26 @@ def test_agent_stream_returns_sources_when_using_kb(monkeypatch):
     assert '"retrieval_ms"' in lines[-1]
     assert '"generation_ms"' in lines[-1]
     assert '"total_ms"' in lines[-1]
+
+
+def test_agent_stream_keeps_retrieved_context_for_natural_language_question(monkeypatch):
+    doc = Document(
+        page_content="RAG-Agent 项目的核心功能包括知识库构建、检索优化和 Agent 路由。",
+        metadata={
+            "source": "data/project-summary.md",
+            "filename": "project-summary.md",
+            "score": 0.86,
+        },
+    )
+
+    monkeypatch.setattr("app.agent.store.count", lambda: 1)
+    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
+    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
+    monkeypatch.setattr("app.agent._stream_llm", lambda prompt, variables: iter(["项目介绍"]))
+
+    client = TestClient(api.app)
+    response = client.post("/chat/stream", json={"question": "请介绍一下这个 RAG-Agent 项目的核心功能。"})
+
+    assert response.status_code == 200
+    assert '"mode": "agent_kb"' in response.text
+    assert '"filename": "project-summary.md"' in response.text

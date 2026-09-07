@@ -165,9 +165,6 @@ def chat(message: str) -> str:
     kb = _search_kb(message)
     context = kb["context"]
     if context:
-        if len(message) >= 4 and message[:4] not in context:
-            context = ''
-    if context:
         response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today, "style": _ANSWER_STYLE})
     else:
         response = _call_deepseek_direct(message, history)
@@ -187,9 +184,6 @@ def chat_stream_events(message: str):
     kb = _search_kb(message)
     retrieval_ms = int((perf_counter() - retrieval_started) * 1000)
     context = kb["context"]
-    if context:
-        if len(message) >= 4 and message[:4] not in context:
-            context = ""
 
     mode = "agent_kb" if context else "agent"
     yield {

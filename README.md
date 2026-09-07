@@ -3,14 +3,14 @@
 ## 在线 Demo
 
 ```text
-阿里云 ECS Demo（推荐）：http://8.137.183.225:8001
+阿里云 ECS Demo（推荐）：http://101.37.116.38:8001
 Render 备用 Demo：https://rag-workbench-demo.onrender.com
 ```
 
 首次访问或容器重启后，可以先访问以下地址触发预热：
 
 ```text
-http://8.137.183.225:8001/warmup
+http://101.37.116.38:8001/warmup
 ```
 
 阿里云部署过程中遇到的服务器选型、Docker 镜像上传、HuggingFace 模型缓存、端口放行和性能排查问题，已经整理在 [docs/aliyun-deployment-review.md](docs/aliyun-deployment-review.md)。
@@ -26,7 +26,7 @@ http://8.137.183.225:8001/warmup
 项目已经部署到公网，只需要打开下面阿里云 Demo 链接( 推荐 )：
 
 ```text
-http://8.137.183.225:8001
+http://101.37.116.38:8001
 ```
 
 或Render链接：
