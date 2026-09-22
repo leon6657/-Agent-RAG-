@@ -51,6 +51,7 @@ Answer:"""
 
 memory = SimpleMemory(window_size=5)
 _SEARCH_THRESHOLD = 0.35
+_AGENT_KB_MIN_SCORE = 0.55
 
 
 def _call_llm(prompt_template: str, variables: dict) -> str:
@@ -163,7 +164,8 @@ def chat(message: str) -> str:
     history = memory.get_history()
 
     kb = _search_kb(message)
-    context = kb["context"]
+    top_score = kb["top_score"] or 0.0
+    context = kb["context"] if top_score >= _AGENT_KB_MIN_SCORE else ""
     if context:
         response = _call_llm(_KB_PROMPT, {"context": context, "question": message, "current_date": today, "style": _ANSWER_STYLE})
     else:
@@ -183,7 +185,8 @@ def chat_stream_events(message: str):
     retrieval_started = perf_counter()
     kb = _search_kb(message)
     retrieval_ms = int((perf_counter() - retrieval_started) * 1000)
-    context = kb["context"]
+    top_score = kb["top_score"] or 0.0
+    context = kb["context"] if top_score >= _AGENT_KB_MIN_SCORE else ""
 
     mode = "agent_kb" if context else "agent"
     yield {

@@ -131,3 +131,32 @@ def test_agent_stream_keeps_retrieved_context_for_natural_language_question(monk
     assert response.status_code == 200
     assert '"mode": "agent_kb"' in response.text
     assert '"filename": "project-summary.md"' in response.text
+
+
+def test_agent_stream_falls_back_when_retrieval_score_is_low(monkeypatch):
+    doc = Document(
+        page_content="RAG-Agent 项目的核心功能包括知识库构建、检索优化和 Agent 路由。",
+        metadata={
+            "source": "data/project-summary.md",
+            "filename": "project-summary.md",
+            "score": 0.51,
+        },
+    )
+
+    monkeypatch.setattr("app.agent.store.count", lambda: 1)
+    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
+    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
+    monkeypatch.setattr(
+        "app.agent._stream_llm",
+        lambda prompt, variables: (_ for _ in ()).throw(AssertionError("should not use KB context")),
+    )
+    monkeypatch.setattr("app.agent._stream_deepseek_direct", lambda question, history: iter(["开放式回答"]))
+    monkeypatch.setattr("app.agent.chat", lambda message: "unexpected fallback")
+
+    client = TestClient(api.app)
+    response = client.post("/chat/stream", json={"question": "什么是计算机网络？"})
+
+    assert response.status_code == 200
+    assert '"mode": "agent"' in response.text
+    assert '"sources": []' in response.text
+    assert '"text": "开放式回答"' in response.text
