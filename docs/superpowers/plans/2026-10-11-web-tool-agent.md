@@ -195,7 +195,10 @@ def _response(*, content=None, tool_calls=None):
 
 
 def test_stream_calls_kb_tool_and_exposes_sources(monkeypatch):
-    responses = iter([_response(tool_calls=[_tool_call("search_knowledge_base", '{"query":"LCEL"}')])])
+    responses = iter([
+        _response(tool_calls=[_tool_call("search_knowledge_base", '{"query":"LCEL"}')]),
+        _response(),
+    ])
     client = SimpleNamespace(
         chat=SimpleNamespace(
             completions=SimpleNamespace(
@@ -225,6 +228,50 @@ def test_stream_calls_kb_tool_and_exposes_sources(monkeypatch):
     assert meta["mode"] == "tool_agent"
     assert meta["sources"][0]["filename"] == "lcel.md"
     assert meta["tools"] == ["知识库检索"]
+
+
+def test_stream_answers_directly_when_model_needs_no_tool(monkeypatch):
+    client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=lambda **kwargs: _response() if not kwargs.get("stream") else iter([
+                    SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="你好。"))])
+                ])
+            )
+        )
+    )
+    monkeypatch.setattr(tool_agent, "_get_client", lambda: client)
+
+    events = list(tool_agent.chat_stream_events("你好"))
+
+    assert any(event == {"event": "token", "text": "你好。"} for event in events)
+    meta = next(event for event in events if event["event"] == "meta")
+    assert meta["tools"] == []
+
+
+def test_stream_returns_time_tool_to_model(monkeypatch):
+    responses = iter([_response(tool_calls=[_tool_call("get_current_time", "{}")]), _response()])
+    client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=lambda **kwargs: next(responses) if not kwargs.get("stream") else iter([
+                    SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="当前时间是 10:00。"))])
+                ])
+            )
+        )
+    )
+    monkeypatch.setattr(tool_agent, "_get_client", lambda: client)
+    monkeypatch.setattr(
+        tool_agent.tools,
+        "execute_with_metadata",
+        lambda name, arguments: {"name": name, "content": "2026-10-11 10:00:00", "sources": [], "top_score": None, "error": None},
+    )
+
+    events = list(tool_agent.chat_stream_events("现在几点？"))
+
+    meta = next(event for event in events if event["event"] == "meta")
+    assert meta["tools"] == ["获取当前时间"]
+    assert any(event["event"] == "token" for event in events)
 
 
 def test_stream_stops_after_maximum_tool_iterations(monkeypatch):
