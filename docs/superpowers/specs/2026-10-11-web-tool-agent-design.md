@@ -1,56 +1,48 @@
-# V2 Web Tool Agent Design
+# V2 网页端真实工具调用 Agent 设计
 
-## Goal
+## 目标
 
-Upgrade the web Agent mode from deterministic retrieval routing to a controlled
-Function Calling loop. The model can decide whether to invoke a read-only tool,
-observe its result, and then produce the final answer.
+将网页中的 Agent 模式从“固定的检索路由”升级为可控的 Function Calling
+循环。模型可以自行判断是否需要调用只读工具，读取工具结果后再生成最终回答。
 
-## Scope
+## 本阶段范围
 
-- Reuse the existing OpenAI-compatible function calling protocol.
-- Expose two tools only: `search_knowledge_base` and `get_current_time`.
-- Integrate the loop with `/chat` and `/chat/stream`.
-- Preserve Chinese streaming answers, source cards, timing metadata, and
-  short-term conversation history.
-- Emit tool lifecycle events for the existing web UI: selected, running, and
-  completed.
-- Bound execution to three model/tool iterations and return a clear error event
-  for invalid arguments or provider failures.
+- 复用现有的 OpenAI 兼容 Function Calling 协议。
+- 仅开放 `search_knowledge_base`（知识库检索）和 `get_current_time`
+  （获取当前时间）两个工具。
+- 将工具调用循环接入 `/chat` 与 `/chat/stream`。
+- 保留中文流式回答、来源卡片、耗时元数据和短期对话记忆。
+- 向现有网页发送工具生命周期事件：已选择、执行中、已完成。
+- 最多执行三轮“模型决策/工具调用”，参数错误或模型服务异常时返回清晰的错误事件。
 
-## Out Of Scope
+## 不在本阶段处理的内容
 
-- Web search, external write tools, and autonomous background tasks.
-- Multi-Agent supervisor, handoffs, persistent memory, and user accounts.
-- Changes to strict RAG endpoints (`/query` and `/query/stream`).
+- 联网搜索、外部写入类工具与后台自主任务。
+- 多 Agent 调度、Agent 交接、持久化记忆和用户账户。
+- 严格 RAG 接口（`/query` 与 `/query/stream`）的行为变更。
 
-## Architecture
+## 架构设计
 
-`/chat` and `/chat/stream` call a new reusable tool-agent runner. It builds
-chat messages, sends available tool schemas to the model, executes requested
-read-only tools, adds `tool` messages back to the conversation, and repeats
-until the model returns final text or the iteration limit is reached.
+`/chat` 与 `/chat/stream` 调用一个可复用的工具 Agent 执行器。执行器构造对话
+消息，将可用工具的定义发送给模型，执行模型请求的只读工具，把工具结果作为
+`tool` 消息追加回对话；重复这一过程，直到模型返回最终文本或达到轮次上限。
 
-The knowledge-base tool returns structured context and source metadata rather
-than only a rendered string. The runner accumulates the source metadata so the
-API can keep returning the existing `sources` and `top_score` fields.
+知识库检索工具需要返回结构化的上下文与来源元数据，而不只是拼接后的文本。
+执行器会累计来源信息，使 API 继续返回现有的 `sources` 与 `top_score` 字段。
 
-For streaming, tool events are sent before final token events. Tool execution
-itself is synchronous and local; only the final model response is streamed.
+流式模式下，先发送工具事件，再发送最终回答的 token 事件。工具执行在本地
+同步完成，只有最终模型回答采用流式输出。
 
-## Error Handling
+## 异常处理
 
-- Unknown tools and invalid JSON arguments produce a bounded tool-result error
-  for the model to recover from.
-- Provider failures produce a user-visible error event and do not retry
-  indefinitely.
-- A maximum of three iterations prevents loops and uncontrolled token costs.
+- 未知工具和不合法的 JSON 参数会生成受控的工具结果错误，模型仍有机会继续处理。
+- 模型服务异常会产生用户可见的错误事件，不进行无限重试。
+- 三轮上限用于避免工具循环与不可控的 Token 消耗。
 
-## Tests
+## 测试要求
 
-- The model can answer directly without a tool call.
-- The model calls the knowledge-base tool and returned source metadata reaches
-  the stream metadata.
-- The model calls the time tool and receives its result.
-- A malformed tool request does not crash the API.
-- The iteration bound ends an endless tool-call sequence safely.
+- 模型可以不调用工具，直接生成回答。
+- 模型调用知识库检索工具后，来源元数据会进入流式接口的元数据事件。
+- 模型调用时间工具后，能接收并利用返回结果。
+- 异常的工具请求不会导致 API 崩溃。
+- 连续工具调用会在达到轮次上限后安全结束。
