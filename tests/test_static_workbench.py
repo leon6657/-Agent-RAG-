@@ -74,6 +74,14 @@ def test_workbench_page_streams_and_formats_answers():
     assert "orderedListNext" in html
 
 
+def test_workbench_displays_agent_tool_events():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert 'event.event === "tool"' in html
+    assert "\\u5de5\\u5177\\uff1a" in html
+    assert "\\u6b63\\u5728\\u6267\\u884c\\uff1a" in html
+
+
 def test_workbench_page_uses_chinese_labels():
     html = Path("static/index.html").read_text(encoding="utf-8")
 

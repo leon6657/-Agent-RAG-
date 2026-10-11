@@ -649,6 +649,7 @@ function buildMetaText(meta) {
   const parts = [meta.mode || "assistant"];
   if (typeof meta.top_score === "number") parts.push("top " + meta.top_score.toFixed(3));
   if (Array.isArray(meta.sources)) parts.push(meta.sources.length + " sources");
+  if (Array.isArray(meta.tools) && meta.tools.length) parts.push("\u5de5\u5177\uff1a" + meta.tools.join("\u3001"));
   const timing = buildTimingText(meta);
   if (timing) parts.push(timing);
   return parts.join(" | ");
@@ -671,6 +672,12 @@ function updateEvidence(data) {
     trustState.textContent = "\u57fa\u4e8e\u77e5\u8bc6\u5e93\u56de\u7b54";
     trustDetail.textContent = sources.length ? "\u56de\u7b54\u5df2\u5173\u8054\u53ec\u56de\u6765\u6e90\u7247\u6bb5\u3002" : "\u56de\u7b54\u6210\u529f\uff0c\u4f46\u672a\u8fd4\u56de\u6765\u6e90\u7247\u6bb5\u3002";
     setStatus(scoreState, "good", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
+  } else if (data.mode === "tool_agent") {
+    trustState.textContent = sources.length ? "Agent \u5de5\u5177\u8c03\u7528\u5b8c\u6210" : "Agent \u56de\u7b54";
+    trustDetail.textContent = sources.length
+      ? "Agent \u5df2\u8c03\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5e76\u8fd4\u56de\u6765\u6e90\u3002"
+      : "\u672c\u6b21 Agent \u672a\u4f7f\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5de5\u5177\u3002";
+    setStatus(scoreState, sources.length ? "good" : "warn", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
   } else {
     trustState.textContent = "Agent \u56de\u7b54";
     trustDetail.textContent = "Agent \u6a21\u5f0f\u53ef\u80fd\u4f7f\u7528\u641c\u7d22\u3001\u5de5\u5177\u6216\u81ea\u7531\u63a8\u7406\u3002";
@@ -759,6 +766,8 @@ async function sendStream(endpoint, q, initialMeta) {
 function handleStreamEvent(event, assistant, meta) {
   if (event.event === "status") {
     setAssistantStatus(assistant, event.message);
+  } else if (event.event === "tool") {
+    setAssistantStatus(assistant, event.message || ("\u6b63\u5728\u6267\u884c\uff1a" + (event.name || "\u5de5\u5177")));
   } else if (event.event === "meta") {
     assistant.row.textContent = buildMetaText(event);
     updateEvidence(event);

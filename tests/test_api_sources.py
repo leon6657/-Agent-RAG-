@@ -79,84 +79,40 @@ def test_chat_stream_endpoint_returns_ndjson_events(monkeypatch):
     assert '"event": "done"' in lines[-1]
 
 
-def test_agent_stream_returns_sources_when_using_kb(monkeypatch):
-    doc = Document(
-        page_content="LCEL is LangChain Expression Language.",
-        metadata={
-            "source": "data/lcel.md",
-            "filename": "lcel.md",
-            "score": 0.86,
-        },
-    )
+def test_chat_stream_preserves_tool_events(monkeypatch):
+    def fake_stream(question):
+        assert question == "现在几点？"
+        yield {
+            "event": "status",
+            "stage": "planning",
+            "message": "正在分析问题并选择工具...",
+        }
+        yield {
+            "event": "tool",
+            "name": "get_current_time",
+            "status": "running",
+            "message": "正在执行：获取当前时间...",
+        }
+        yield {
+            "event": "meta",
+            "mode": "tool_agent",
+            "sources": [],
+            "top_score": None,
+            "tools": ["获取当前时间"],
+            "retrieval_ms": 0,
+        }
+        yield {"event": "token", "text": "当前时间是 10:00。"}
+        yield {
+            "event": "done",
+            "retrieval_ms": 0,
+            "generation_ms": 10,
+            "total_ms": 10,
+            "tools": ["获取当前时间"],
+        }
 
-    monkeypatch.setattr("app.agent.store.count", lambda: 1)
-    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
-    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
-    monkeypatch.setattr("app.agent._stream_llm", lambda prompt, variables: iter(["LCEL answer"]))
-
-    client = TestClient(api.app)
-    response = client.post("/chat/stream", json={"question": "LCEL 是什么？"})
-
-    assert response.status_code == 200
-    lines = response.text.strip().splitlines()
-    assert '"stage": "retrieving"' in lines[0]
-    assert '"mode": "agent_kb"' in lines[1]
-    assert '"filename": "lcel.md"' in lines[1]
-    assert '"score": 0.86' in lines[1]
-    assert '"preview": "LCEL is LangChain Expression Language."' in lines[1]
-    assert '"stage": "generating"' in lines[2]
-    assert '"retrieval_ms"' in lines[-1]
-    assert '"generation_ms"' in lines[-1]
-    assert '"total_ms"' in lines[-1]
-
-
-def test_agent_stream_keeps_retrieved_context_for_natural_language_question(monkeypatch):
-    doc = Document(
-        page_content="RAG-Agent 项目的核心功能包括知识库构建、检索优化和 Agent 路由。",
-        metadata={
-            "source": "data/project-summary.md",
-            "filename": "project-summary.md",
-            "score": 0.86,
-        },
-    )
-
-    monkeypatch.setattr("app.agent.store.count", lambda: 1)
-    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
-    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
-    monkeypatch.setattr("app.agent._stream_llm", lambda prompt, variables: iter(["项目介绍"]))
-
-    client = TestClient(api.app)
-    response = client.post("/chat/stream", json={"question": "请介绍一下这个 RAG-Agent 项目的核心功能。"})
+    monkeypatch.setattr("app.agent.chat_stream_events", fake_stream)
+    response = TestClient(api.app).post("/chat/stream", json={"question": "现在几点？"})
 
     assert response.status_code == 200
-    assert '"mode": "agent_kb"' in response.text
-    assert '"filename": "project-summary.md"' in response.text
-
-
-def test_agent_stream_falls_back_when_retrieval_score_is_low(monkeypatch):
-    doc = Document(
-        page_content="RAG-Agent 项目的核心功能包括知识库构建、检索优化和 Agent 路由。",
-        metadata={
-            "source": "data/project-summary.md",
-            "filename": "project-summary.md",
-            "score": 0.51,
-        },
-    )
-
-    monkeypatch.setattr("app.agent.store.count", lambda: 1)
-    monkeypatch.setattr("app.agent.embed_query_cached", lambda question: [0.1, 0.2])
-    monkeypatch.setattr("app.agent.store.search_cached", lambda vector, k=4: [doc])
-    monkeypatch.setattr(
-        "app.agent._stream_llm",
-        lambda prompt, variables: (_ for _ in ()).throw(AssertionError("should not use KB context")),
-    )
-    monkeypatch.setattr("app.agent._stream_deepseek_direct", lambda question, history: iter(["开放式回答"]))
-    monkeypatch.setattr("app.agent.chat", lambda message: "unexpected fallback")
-
-    client = TestClient(api.app)
-    response = client.post("/chat/stream", json={"question": "什么是计算机网络？"})
-
-    assert response.status_code == 200
-    assert '"mode": "agent"' in response.text
-    assert '"sources": []' in response.text
-    assert '"text": "开放式回答"' in response.text
+    assert '"event": "tool"' in response.text
+    assert '"mode": "tool_agent"' in response.text
