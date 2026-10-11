@@ -3,6 +3,12 @@ from types import SimpleNamespace
 from app import tool_agent
 
 
+def test_system_prompt_requires_chinese_readable_format():
+    assert "请使用中文回答" in tool_agent._SYSTEM_PROMPT
+    assert "不要使用 ###" in tool_agent._SYSTEM_PROMPT
+    assert "连续编号" in tool_agent._SYSTEM_PROMPT
+
+
 def _tool_call(name, arguments, call_id="call_1"):
     return SimpleNamespace(
         id=call_id,

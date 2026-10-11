@@ -774,6 +774,11 @@ function handleStreamEvent(event, assistant, meta) {
     return event;
   } else if (event.event === "token") {
     appendAssistantToken(assistant, event.text);
+  } else if (event.event === "error") {
+    assistant.text = event.message || "Agent 执行失败，请稍后重试。";
+    assistant.bubble.textContent = assistant.text;
+    assistant.row.textContent = "error";
+    return Object.assign({}, meta, {mode:"error"});
   } else if (event.event === "done") {
     const nextMeta = Object.assign({}, meta, event);
     assistant.row.textContent = buildMetaText(nextMeta);

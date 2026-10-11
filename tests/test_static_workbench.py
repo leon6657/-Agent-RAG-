@@ -82,6 +82,13 @@ def test_workbench_displays_agent_tool_events():
     assert "\\u6b63\\u5728\\u6267\\u884c\\uff1a" in html
 
 
+def test_workbench_displays_agent_error_events():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert 'event.event === "error"' in html
+    assert "assistant.text = event.message" in html
+
+
 def test_workbench_page_uses_chinese_labels():
     html = Path("static/index.html").read_text(encoding="utf-8")
 
