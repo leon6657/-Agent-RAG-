@@ -54,12 +54,55 @@ def get_definitions():
     ]
 
 
-def execute(name: str, arguments: str) -> str:
-    args = json.loads(arguments) if arguments else {}
+def _result(
+    name: str,
+    content: str,
+    *,
+    sources: list[dict] | None = None,
+    top_score: float | None = None,
+    error: str | None = None,
+) -> dict:
+    return {
+        "name": name,
+        "content": content,
+        "sources": sources or [],
+        "top_score": top_score,
+        "error": error,
+    }
+
+
+def _search_knowledge_base_with_metadata(query: str) -> dict:
+    from app.query import _format_context, _retrieve_docs, _source_payload, _top_score
+
+    docs = _retrieve_docs(query)
+    return _result(
+        "search_knowledge_base",
+        _format_context(docs),
+        sources=_source_payload(docs),
+        top_score=_top_score(docs),
+    )
+
+
+def execute_with_metadata(name: str, arguments: str) -> dict:
+    try:
+        args = json.loads(arguments) if arguments else {}
+    except json.JSONDecodeError:
+        return _result(name, "工具参数错误：参数必须是合法 JSON。", error="invalid_arguments")
+
+    if name == "search_knowledge_base":
+        try:
+            return _search_knowledge_base_with_metadata(**args)
+        except Exception as exc:
+            return _result(name, f"工具执行失败：{exc}", error="execution_error")
+
     func = _TOOL_REGISTRY.get(name)
     if not func:
-        return f"Unknown tool: {name}"
+        return _result(name, f"未知工具：{name}", error="unknown_tool")
     try:
-        return func(**args)
-    except Exception as e:
-        return f"Execution error: {e}"
+        return _result(name, str(func(**args)))
+    except Exception as exc:
+        return _result(name, f"工具执行失败：{exc}", error="execution_error")
+
+
+def execute(name: str, arguments: str) -> str:
+    return execute_with_metadata(name, arguments)["content"]
