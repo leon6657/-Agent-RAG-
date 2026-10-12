@@ -51,6 +51,20 @@ def get_definitions():
                 },
             },
         },
+        {
+            "type": "function",
+            "function": {
+                "name": "search_web",
+                "description": "Search public web information for timely or external facts / 搜索公开网页信息",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search keywords"}
+                    },
+                    "required": ["query"],
+                },
+            },
+        },
     ]
 
 
@@ -83,6 +97,34 @@ def _search_knowledge_base_with_metadata(query: str) -> dict:
     )
 
 
+def _search_web_with_metadata(query: str) -> dict:
+    from app.web_search import search
+
+    results = search(query)
+    if not results:
+        return _result("search_web", "联网搜索未找到可用结果。")
+
+    sources = [
+        {
+            "source": result["url"],
+            "filename": f"网页：{result['title']}",
+            "title": result["title"],
+            "url": result["url"],
+            "preview": result["content"],
+            "score": result["score"],
+            "source_type": "web",
+        }
+        for result in results
+    ]
+    content = "\n\n".join(
+        f"[网页来源 {index}] {result['title']}\n"
+        f"URL: {result['url']}\n"
+        f"摘要: {result['content']}"
+        for index, result in enumerate(results, start=1)
+    )
+    return _result("search_web", content, sources=sources)
+
+
 def execute_with_metadata(name: str, arguments: str) -> dict:
     try:
         args = json.loads(arguments) if arguments else {}
@@ -92,6 +134,16 @@ def execute_with_metadata(name: str, arguments: str) -> dict:
     if name == "search_knowledge_base":
         try:
             return _search_knowledge_base_with_metadata(**args)
+        except Exception as exc:
+            return _result(name, f"工具执行失败：{exc}", error="execution_error")
+
+    if name == "search_web":
+        from app.web_search import WebSearchError
+
+        try:
+            return _search_web_with_metadata(**args)
+        except WebSearchError as exc:
+            return _result(name, str(exc), error=exc.code)
         except Exception as exc:
             return _result(name, f"工具执行失败：{exc}", error="execution_error")
 
