@@ -37,3 +37,15 @@ def test_rag_min_score_can_be_configured_from_environment(monkeypatch):
     cfg = Config()
 
     assert cfg.rag_min_score == 0.42
+
+
+def test_tavily_config_can_be_configured_from_environment(monkeypatch):
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+    monkeypatch.setenv("TAVILY_MAX_RESULTS", "3")
+    monkeypatch.setenv("TAVILY_TIMEOUT_SECONDS", "7")
+
+    cfg = Config()
+
+    assert cfg.tavily_api_key == "test-key"
+    assert cfg.tavily_max_results == 3
+    assert cfg.tavily_timeout_seconds == 7

@@ -26,6 +26,16 @@ class Config:
         default_factory=lambda: float(os.getenv("RAG_MIN_SCORE", "0.35"))
     )
 
+    tavily_api_key: str = field(
+        default_factory=lambda: os.getenv("TAVILY_API_KEY", "")
+    )
+    tavily_max_results: int = field(
+        default_factory=lambda: int(os.getenv("TAVILY_MAX_RESULTS", "5"))
+    )
+    tavily_timeout_seconds: int = field(
+        default_factory=lambda: int(os.getenv("TAVILY_TIMEOUT_SECONDS", "10"))
+    )
+
     chroma_persist_dir: str = field(
         default_factory=lambda: os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "chroma_db"
