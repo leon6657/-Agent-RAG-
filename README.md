@@ -61,7 +61,13 @@ copy .env.example .env
 DEEPSEEK_API_KEY=your_api_key
 DEEPSEEK_MODEL=deepseek-v4-flash
 RAG_MIN_SCORE=0.35
+# 可选：仅 Agent 的 search_web 工具使用；真实 Key 不应提交。
+TAVILY_API_KEY=
+TAVILY_MAX_RESULTS=5
+TAVILY_TIMEOUT_SECONDS=10
 ```
+
+严格 RAG 模式只检索本地知识库，不会联网。Agent 模式可由模型按需调用 V2.1 的可选 `search_web` 联网搜索工具；未配置 `TAVILY_API_KEY` 时，该工具会返回配置提示。请只在本地被忽略的 `.env` 中填写真实 Key，切勿提交。
 
 构建知识库并启动 Web 服务：
 
@@ -86,8 +92,13 @@ docker run --rm -p 8000:8000 `
   -e DEEPSEEK_API_KEY=your_api_key `
   -e DEEPSEEK_MODEL=deepseek-v4-flash `
   -e RAG_MIN_SCORE=0.35 `
+  -e TAVILY_API_KEY= `
+  -e TAVILY_MAX_RESULTS=5 `
+  -e TAVILY_TIMEOUT_SECONDS=10 `
   rag-workbench-demo
 ```
+
+Docker 中同样只在需要 Agent 联网搜索时设置 `TAVILY_API_KEY`；不要把真实 Key 写入 Dockerfile、镜像或版本库。
 
 访问：
 
@@ -121,13 +132,13 @@ http://localhost:8000/warmup
 - 从 ChromaDB 迁移到 JSON + numpy 向量库，解决本地权限和依赖稳定性问题
 - 实现 Markdown 加载、语义分块、BGE 嵌入、向量检索、RAG 生成的完整链路
 - 支持 BM25 + dense hybrid retrieval、query rewrite、rerank，并用 Recall@k / MRR / Precision / SourceHit@k 做评测
-- 提供 FastAPI API、Web 聊天界面、Agent 模式、工具调用模式和评测 bad case 报告
+- 提供 FastAPI API、Web 聊天界面、Agent 模式、V2.1 可选联网搜索工具和评测 bad case 报告
 - 将 API key 从项目文件中剥离，提供 `.env.example` 和可复现依赖清单
 
 > 历史文档中保留了阶段演进记录；上方“当前可复现状态”以当前代码和本地评测结果为准。
 
 > 一个围绕 **文档知识库** 搭建的 **RAG + Agent 知识库智能问答系统**。
-> 项目从 **最小可用原型（Minimal RAG）** 起步，逐步演进到 **检索优化（Hybrid Retrieval）→ Agent 智能体（Agentic RAG）→ 工程化闭环（Production-ready Project）**，完整覆盖了从 **知识库构建、检索召回、LLM 问答、Agent 决策、联网搜索、缓存优化、评测体系、Web/API 服务化** 的全链路能力。
+> 项目从 **最小可用原型（Minimal RAG）** 起步，逐步演进到 **检索优化（Hybrid Retrieval）→ Agent 智能体（Agentic RAG）→ 工程化闭环（Production-ready Project）**，完整覆盖了从 **知识库构建、检索召回、LLM 问答、Agent 决策、可选联网搜索、缓存优化、评测体系、Web/API 服务化** 的全链路能力。
 >
 > 项目在实践中解决了 **ChromaDB 兼容性问题、LangChain 导入冲突、Runnable 并发挂起、Agent 决策不稳定、联网搜索能力集成、日期幻觉、中文 Embedding 模型下载受限** 等一系列工程问题，形成了一套可复用、可迭代、可扩展的 **RAG 系统搭建范式**。
 >
@@ -263,13 +274,13 @@ http://localhost:8000/warmup
 ## 2.4 Agent 智能决策
 
 - 基于向量相似度阈值判断知识库是否足够回答
-- 如果知识库命中不足，则触发联网搜索
+- 模型可在需要时调用可选的联网搜索工具
 - 如果联网搜索失败，则回退到自由对话模式
 - 通过 LangGraph 构建状态图，实现清晰的 Agent 控制流
 
 ## 2.5 联网搜索与开放域补充
 
-- 调用 DeepSeek 的联网搜索能力
+- Agent 模型可按需调用 Tavily 联网搜索工具
 - 在本地知识库不足时补充外部信息
 - 兼顾“私有知识问答”和“开放域信息获取”
 
@@ -551,7 +562,7 @@ graph TD
 1. **先执行知识库检索**
 2. 计算检索结果的最高余弦相似度
 3. 如果最高相似度 ≥ 阈值（0.35），说明知识库大概率有足够相关内容 → 走 RAG
-4. 如果最高相似度 < 阈值，则认为知识库不足以回答 → 尝试联网搜索
+4. 如果最高相似度 < 阈值，则认为知识库不足以回答 → Agent 可按需调用可选联网搜索工具
 
 这个设计的优势非常明显：
 
@@ -563,7 +574,7 @@ graph TD
 
 ## 联网搜索能力
 
-在知识库无法回答时，系统调用 DeepSeek 的联网搜索能力（`enable_search=True`），实现开放域补充。
+当本地知识库不足以回答时，Agent 模型可调用 Tavily 的可选 `search_web` 工具，实现开放域补充；严格 RAG 模式不会走这条路径。
 
 这样，系统就不再只是“私有知识问答器”，而是变成：
 
@@ -1004,15 +1015,15 @@ graph TD
 
 ------
 
-## 9.2 DeepSeek 联网搜索的使用方式
+## 9.2 Tavily 联网搜索工具的使用方式
 
-项目利用 DeepSeek API 的联网搜索能力，通过 `enable_search=True` 实现搜索增强，不需要额外接入第三方搜索 API Key。
+联网搜索是 V2.1 的可选 `search_web` 工具。仅当 Agent 模型决定调用该工具时，系统才会向 Tavily 请求公开网页；严格 RAG 模式永不联网。使用该工具需要在本地环境变量中配置 `TAVILY_API_KEY`，真实 Key 不应提交到版本库。
 
 这带来的好处是：
 
-- 接入成本低
-- 实现简单
-- 与现有 LLM 调用链天然兼容
+- 联网行为明确且可追踪
+- 未配置时会返回受控的配置提示
+- 本地知识库问答与开放域补充保持隔离
 
 ------
 
@@ -1453,6 +1464,7 @@ http://localhost:8000
 - 强依赖知识库内容
 - 回答可控性更强
 - 适合做文档问答 / 笔记检索
+- 不会联网
 
 ------
 
@@ -1467,7 +1479,7 @@ http://localhost:8000
 特点：
 
 - 优先知识库
-- 知识库不足时自动搜索
+- 模型可在需要时调用可选的 `search_web` 工具
 - 搜索失败时自由对话兜底
 - 更自然、更接近真实 Copilot 体验
 

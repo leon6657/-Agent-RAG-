@@ -1,6 +1,15 @@
 from pathlib import Path
 
 
+def test_demo_documentation_mentions_optional_tavily_configuration():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    env_example = Path(".env.example").read_text(encoding="utf-8")
+
+    assert "TAVILY_API_KEY" in readme
+    assert "TAVILY_API_KEY=" in env_example
+    assert "tvly-" not in env_example
+
+
 def test_dockerfile_builds_fixed_knowledge_demo():
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
 
