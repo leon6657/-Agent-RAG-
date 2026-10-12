@@ -7,6 +7,7 @@ def test_demo_documentation_mentions_optional_tavily_configuration():
 
     assert "TAVILY_API_KEY" in readme
     assert "TAVILY_API_KEY=" in env_example
+    assert "tvly-" not in readme
     assert "tvly-" not in env_example
 
 
@@ -42,6 +43,18 @@ def test_demo_deployment_doc_mentions_required_cloud_settings():
     assert "/health" in doc
     assert "Render" in doc
     assert "Railway" in doc
+
+
+def test_docker_documentation_requires_prebuilt_fixed_knowledge_artifacts():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    doc = Path("docs/deployment-demo.md").read_text(encoding="utf-8")
+
+    for documentation in (readme, doc):
+        assert "vector_store.json" in documentation
+        assert ".ingest_state.json" in documentation
+        assert ".hf_cache" in documentation
+        assert "Docker 构建阶段执行 `python main.py --ingest` 自动生成" not in documentation
+        assert "构建过程中会自动运行 `python main.py --ingest`" not in documentation
 
 
 def test_requirements_are_pinned_for_reproducible_docker_builds():

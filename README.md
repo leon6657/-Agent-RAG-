@@ -86,6 +86,14 @@ http://localhost:8000
 
 适合下载到本地展示、作品集 Demo 或部署到 Render / Railway / 云服务器。
 
+镜像不会执行 `python main.py --ingest`。从干净克隆构建固定知识库 Demo 前，先在本地完成建库，并将生成的 `vector_store.json`、`.ingest_state.json` 和 `.hf_cache` 提交到部署仓库，或确保它们位于 Docker 构建上下文中：
+
+```powershell
+python main.py --ingest
+```
+
+这三个产物被 `.gitignore` 忽略；若使用 Git 驱动的 Render 或 Railway 部署，需要将它们强制加入部署仓库（或用包含它们的构建上下文）。Dockerfile 会校验三个产物均存在，缺失时构建会失败。
+
 ```powershell
 docker build -t rag-workbench-demo .
 docker run --rm -p 8000:8000 `
@@ -106,7 +114,7 @@ Docker 中同样只在需要 Agent 联网搜索时设置 `TAVILY_API_KEY`；不�
 http://localhost:8000
 ```
 
-Docker 镜像会在构建阶段执行 `python main.py --ingest`，因此部署后的 Demo 会自带固定知识库索引。更详细的部署说明见 [docs/deployment-demo.md](docs/deployment-demo.md)。
+Docker 镜像会复制上述预构建产物，因此部署后的 Demo 使用固定知识库索引。更详细的部署说明见 [docs/deployment-demo.md](docs/deployment-demo.md)。
 
 部署后可访问以下地址手动预热运行时：
 
@@ -120,7 +128,7 @@ http://localhost:8000/warmup
 
 **当前可复现状态：**
 
-- 知识库：`data/` 下的 Markdown 文档，可通过 `python main.py --ingest` 或 Docker 构建流程生成索引
+- 知识库：`data/` 下的 Markdown 文档；通过本地 `python main.py --ingest` 生成固定 Demo 所需索引
 - 向量库：本地 `vector_store.json`，使用 numpy 余弦相似度检索
 - Embedding：`BAAI/bge-small-zh-v1.5`
 - LLM：DeepSeek OpenAI-compatible API，默认模型 `deepseek-v4-flash`

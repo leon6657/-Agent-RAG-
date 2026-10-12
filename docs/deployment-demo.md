@@ -1,14 +1,25 @@
 # 固定知识库 Demo 部署说明
 
-这个部署方案面向在线演示：知识库内容固定，镜像构建时根据 `data/` 自动生成 `vector_store.json`，线上只提供问答和展示，不依赖用户上传文档。
+这个部署方案面向在线演示：知识库内容固定，镜像复制本地预构建的知识库产物，线上只提供问答和展示，不依赖用户上传文档。
 
 ## 部署形态
 
 - 后端：FastAPI + Uvicorn
 - 前端：`static/index.html`
 - 知识库：仓库中的 `data/*.md`
-- 向量库：Docker 构建阶段执行 `python main.py --ingest` 自动生成
+- 向量库：本地 `python main.py --ingest` 预先生成的 `vector_store.json`
+- 构建产物：`.ingest_state.json` 和 `.hf_cache` 必须与向量库一同提交或携带在 Docker 构建上下文中
 - 密钥：只通过云平台环境变量配置，不写入仓库
+
+## 构建前准备
+
+Dockerfile 不会运行 `python main.py --ingest`，而是在构建时校验并复制预构建产物。从干净克隆开始，先安装项目依赖并在本地执行：
+
+```bash
+python main.py --ingest
+```
+
+该命令会准备 `vector_store.json`、`.ingest_state.json` 和 `.hf_cache`。执行 `docker build` 前，确保三个产物均位于构建上下文中。若通过 Git 驱动的 Render 或 Railway 部署，三个文件或目录必须提交到部署仓库；它们默认被 `.gitignore` 忽略，需要显式携带或强制加入部署仓库。
 
 ## 必需环境变量
 
@@ -56,7 +67,7 @@ http://localhost:8000/health
 6. Health Check Path 填 `/health`。
 7. 创建服务并等待构建完成。
 
-Render 会根据仓库根目录的 `Dockerfile` 构建镜像。构建过程中会自动运行 `python main.py --ingest`。
+Render 会根据仓库根目录的 `Dockerfile` 构建镜像，并复制仓库中已准备好的 `vector_store.json`、`.ingest_state.json` 和 `.hf_cache`。请在推送前按“构建前准备”完成建库并携带这些产物。
 
 ## 免费实例预热
 
@@ -105,7 +116,7 @@ https://rag-workbench-demo.onrender.com/warmup
 
 - 线上新增文档不会持久保存。
 - 如果修改 `data/` 中的知识库，需要重新提交代码并触发重新部署。
-- `vector_store.json` 不需要提交到 GitHub，镜像构建时会自动生成。
+- `vector_store.json`、`.ingest_state.json` 和 `.hf_cache` 必须提交到部署仓库，或以其他方式包含在 Docker 构建上下文中；镜像不会生成它们。
 - `监控 / Admin` 中的重新建库按钮仍可用于演示，但固定 Demo 的正式更新应通过修改仓库后重新部署完成。
 
 ## 推荐上线前检查
