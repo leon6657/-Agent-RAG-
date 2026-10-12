@@ -34,7 +34,9 @@ def test_search_posts_normalized_tavily_results(monkeypatch):
 
     assert calls["url"] == web_search.TAVILY_SEARCH_URL
     assert calls["headers"]["Authorization"] == "Bearer test-key"
+    assert calls["json"]["query"] == "RAG 最新进展"
     assert calls["json"]["max_results"] == web_search.config.tavily_max_results
+    assert calls["timeout"] == web_search.config.tavily_timeout_seconds
     assert results == [{"title": "RAG", "url": "https://example.com/rag", "content": "摘要", "score": 0.9}]
 
 
@@ -74,6 +76,23 @@ def test_search_rejects_invalid_payload(monkeypatch):
 
     with pytest.raises(web_search.WebSearchError, match="结果格式异常"):
         web_search.search("RAG")
+
+
+def test_search_rejects_non_numeric_result_score(monkeypatch):
+    monkeypatch.setattr(web_search.config, "tavily_api_key", "test-key")
+    monkeypatch.setattr(
+        web_search.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse({"results": [{
+            "url": "https://example.com/rag",
+            "score": "not-a-number",
+        }]}),
+    )
+
+    with pytest.raises(web_search.WebSearchError, match="结果格式异常") as raised:
+        web_search.search("RAG")
+
+    assert raised.value.code == "invalid_response"
 
 
 def test_search_returns_empty_list_for_empty_results(monkeypatch):

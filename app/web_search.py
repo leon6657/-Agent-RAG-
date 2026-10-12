@@ -37,13 +37,18 @@ def search(query: str) -> list[dict]:
     if not isinstance(raw_results, list):
         raise WebSearchError("invalid_response", "联网搜索结果格式异常，请稍后重试。")
 
-    return [
-        {
-            "title": str(item.get("title") or "未命名网页"),
-            "url": str(item.get("url") or ""),
-            "content": str(item.get("content") or ""),
-            "score": float(item.get("score") or 0),
-        }
-        for item in raw_results[: config.tavily_max_results]
-        if isinstance(item, dict) and item.get("url")
-    ]
+    try:
+        return [
+            {
+                "title": str(item.get("title") or "未命名网页"),
+                "url": str(item.get("url") or ""),
+                "content": str(item.get("content") or ""),
+                "score": float(item.get("score") or 0),
+            }
+            for item in raw_results[: config.tavily_max_results]
+            if isinstance(item, dict) and item.get("url")
+        ]
+    except (TypeError, ValueError) as exc:
+        raise WebSearchError(
+            "invalid_response", "联网搜索结果格式异常，请稍后重试。"
+        ) from exc
