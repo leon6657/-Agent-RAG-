@@ -4,6 +4,17 @@ from app import tools
 from app.web_search import WebSearchError
 
 
+def test_search_web_definition_requires_query():
+    definitions = tools.get_definitions()
+    search_web = next(
+        definition["function"]
+        for definition in definitions
+        if definition["function"]["name"] == "search_web"
+    )
+
+    assert search_web["parameters"]["required"] == ["query"]
+
+
 def test_search_knowledge_base_returns_sources(monkeypatch):
     doc = Document(
         page_content="LCEL 是 LangChain 的表达式语言。",
