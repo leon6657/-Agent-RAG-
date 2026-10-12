@@ -660,6 +660,14 @@ function setStatus(pill, level, text) {
   pill.querySelector("span:last-child").textContent = text;
 }
 
+function isSafeExternalUrl(value) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+}
+
 function updateEvidence(data) {
   const sources = Array.isArray(data.sources) ? data.sources : [];
   sourceList.innerHTML = "";
@@ -674,7 +682,9 @@ function updateEvidence(data) {
     setStatus(scoreState, "good", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
   } else if (data.mode === "tool_agent") {
     trustState.textContent = sources.length ? "Agent \u5de5\u5177\u8c03\u7528\u5b8c\u6210" : "Agent \u56de\u7b54";
-    trustDetail.textContent = sources.length
+    trustDetail.textContent = Array.isArray(data.tools) && data.tools.includes("联网搜索")
+      ? "Agent 已调用联网搜索，并返回网页来源。"
+      : sources.length
       ? "Agent \u5df2\u8c03\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5e76\u8fd4\u56de\u6765\u6e90\u3002"
       : "\u672c\u6b21 Agent \u672a\u4f7f\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5de5\u5177\u3002";
     setStatus(scoreState, sources.length ? "good" : "warn", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
@@ -697,9 +707,19 @@ function updateEvidence(data) {
     card.className = "source-card";
     const top = document.createElement("div");
     top.className = "source-top";
-    const name = document.createElement("div");
+    const name = document.createElement(
+      src.source_type === "web" && isSafeExternalUrl(src.url) ? "a" : "div"
+    );
     name.className = "source-name";
-    name.textContent = src.filename || src.source || "unknown";
+    if (src.source_type === "web" && isSafeExternalUrl(src.url)) {
+      const link = name;
+      link.href = src.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = src.title || src.filename;
+    } else {
+      name.textContent = src.filename || src.source || "unknown";
+    }
     top.appendChild(name);
     const score = document.createElement("div");
     score.className = "source-score";

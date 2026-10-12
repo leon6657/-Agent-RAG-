@@ -84,6 +84,58 @@ def test_stream_calls_kb_tool_and_exposes_sources(monkeypatch):
     assert meta["tools"] == ["知识库检索"]
 
 
+def test_stream_exposes_web_tool_sources(monkeypatch):
+    responses = iter(
+        [
+            _response(
+                tool_calls=[_tool_call("search_web", '{"query":"RAG 最新进展"}')]
+            ),
+            _response(),
+        ]
+    )
+    client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=lambda **kwargs: next(responses)
+                if not kwargs.get("stream")
+                else _stream_response("已检索网页。")
+            )
+        )
+    )
+    monkeypatch.setattr(tool_agent, "_get_client", lambda: client)
+    monkeypatch.setattr(
+        tool_agent.tools,
+        "execute_with_metadata",
+        lambda name, arguments: {
+            "name": name,
+            "content": "[网页来源 1] RAG",
+            "sources": [{"url": "https://example.com/rag", "source_type": "web"}],
+            "top_score": 0.8,
+            "error": None,
+        },
+    )
+
+    events = list(tool_agent.chat_stream_events("近期 RAG 进展"))
+
+    assert any(
+        event["event"] == "tool" and event["message"] == "正在执行：联网搜索..."
+        for event in events
+    )
+    meta = next(event for event in events if event["event"] == "meta")
+    assert meta["tools"] == ["联网搜索"]
+    assert meta["sources"][0]["source_type"] == "web"
+
+
+def test_merge_sources_deduplicates_web_sources_by_url():
+    first = {"url": "https://example.com/rag", "source_type": "web"}
+    duplicate = dict(first)
+    second = {"url": "https://example.com/agent", "source_type": "web"}
+
+    merged = tool_agent._merge_sources([first], [duplicate, second])
+
+    assert merged == [first, second]
+
+
 def test_stream_answers_directly_when_model_needs_no_tool(monkeypatch):
     client = SimpleNamespace(
         chat=SimpleNamespace(

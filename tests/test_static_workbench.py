@@ -82,6 +82,15 @@ def test_workbench_displays_agent_tool_events():
     assert "\\u6b63\\u5728\\u6267\\u884c\\uff1a" in html
 
 
+def test_workbench_displays_safe_web_sources():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert 'source_type === "web"' in html
+    assert "function isSafeExternalUrl" in html
+    assert 'link.rel = "noopener noreferrer"' in html
+    assert "联网搜索" in html
+
+
 def test_workbench_displays_agent_error_events():
     html = Path("static/index.html").read_text(encoding="utf-8")
 
