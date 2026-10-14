@@ -3,6 +3,8 @@
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.config import Config, config
@@ -49,3 +51,23 @@ def test_tavily_config_can_be_configured_from_environment(monkeypatch):
     assert cfg.tavily_api_key == "test-key"
     assert cfg.tavily_max_results == 3
     assert cfg.tavily_timeout_seconds == 7
+
+
+@pytest.mark.parametrize(
+    ("name", "value", "field", "default"),
+    [
+        ("TAVILY_MAX_RESULTS", "0", "tavily_max_results", 5),
+        ("TAVILY_MAX_RESULTS", "-1", "tavily_max_results", 5),
+        ("TAVILY_MAX_RESULTS", "21", "tavily_max_results", 5),
+        ("TAVILY_TIMEOUT_SECONDS", "not-an-integer", "tavily_timeout_seconds", 10),
+        ("TAVILY_TIMEOUT_SECONDS", "61", "tavily_timeout_seconds", 10),
+    ],
+)
+def test_invalid_tavily_numeric_configuration_uses_controlled_defaults(
+    monkeypatch, name, value, field, default
+):
+    monkeypatch.setenv(name, value)
+
+    cfg = Config()
+
+    assert getattr(cfg, field) == default

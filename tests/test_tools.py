@@ -95,3 +95,16 @@ def test_unknown_tool_returns_controlled_error():
 
     assert result["content"].startswith("未知工具")
     assert result["error"] == "unknown_tool"
+
+
+def test_unexpected_tool_error_does_not_expose_exception_text(monkeypatch):
+    monkeypatch.setattr(
+        "app.query._retrieve_docs",
+        lambda query: (_ for _ in ()).throw(RuntimeError("internal diagnostic detail")),
+    )
+
+    result = tools.execute_with_metadata("search_knowledge_base", '{"query":"RAG"}')
+
+    assert result["error"] == "execution_error"
+    assert result["content"] == "工具执行失败，请稍后重试。"
+    assert "internal diagnostic detail" not in result["content"]

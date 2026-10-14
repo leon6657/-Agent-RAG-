@@ -1,5 +1,7 @@
 """Tavily 搜索客户端，不包含 Agent 或前端逻辑。"""
 
+import math
+
 import requests
 
 from app.config import config
@@ -38,16 +40,22 @@ def search(query: str) -> list[dict]:
         raise WebSearchError("invalid_response", "联网搜索结果格式异常，请稍后重试。")
 
     try:
-        return [
-            {
-                "title": str(item.get("title") or "未命名网页"),
-                "url": str(item.get("url") or ""),
-                "content": str(item.get("content") or ""),
-                "score": float(item.get("score") or 0),
-            }
-            for item in raw_results[: config.tavily_max_results]
-            if isinstance(item, dict) and item.get("url")
-        ]
+        normalized_results = []
+        for item in raw_results[: config.tavily_max_results]:
+            if not isinstance(item, dict) or not item.get("url"):
+                continue
+            score = float(item.get("score") or 0)
+            if not math.isfinite(score):
+                raise ValueError("score must be finite")
+            normalized_results.append(
+                {
+                    "title": str(item.get("title") or "未命名网页"),
+                    "url": str(item.get("url") or ""),
+                    "content": str(item.get("content") or ""),
+                    "score": score,
+                }
+            )
+        return normalized_results
     except (TypeError, ValueError) as exc:
         raise WebSearchError(
             "invalid_response", "联网搜索结果格式异常，请稍后重试。"

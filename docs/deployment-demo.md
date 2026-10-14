@@ -33,7 +33,7 @@ RAG_MIN_SCORE=0.35
 
 ## 本地 Docker 验证
 
-```bash
+```cmd
 docker build -t rag-workbench-demo .
 docker run --rm -p 8000:8000 ^
   -e DEEPSEEK_API_KEY=你的 DeepSeek API Key ^

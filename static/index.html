@@ -681,9 +681,12 @@ function updateEvidence(data) {
     trustDetail.textContent = sources.length ? "\u56de\u7b54\u5df2\u5173\u8054\u53ec\u56de\u6765\u6e90\u7247\u6bb5\u3002" : "\u56de\u7b54\u6210\u529f\uff0c\u4f46\u672a\u8fd4\u56de\u6765\u6e90\u7247\u6bb5\u3002";
     setStatus(scoreState, "good", typeof data.top_score === "number" ? "top score: " + data.top_score.toFixed(3) : "top score: n/a");
   } else if (data.mode === "tool_agent") {
+    const hasWebSources = sources.some(source => source.source_type === "web");
     trustState.textContent = sources.length ? "Agent \u5de5\u5177\u8c03\u7528\u5b8c\u6210" : "Agent \u56de\u7b54";
     trustDetail.textContent = Array.isArray(data.tools) && data.tools.includes("联网搜索")
-      ? "Agent 已调用联网搜索，并返回网页来源。"
+      ? hasWebSources
+        ? "Agent 已调用联网搜索，并返回网页来源。"
+        : "Agent 已调用联网搜索，但未返回可用网页来源。"
       : sources.length
       ? "Agent \u5df2\u8c03\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5e76\u8fd4\u56de\u6765\u6e90\u3002"
       : "\u672c\u6b21 Agent \u672a\u4f7f\u7528\u77e5\u8bc6\u5e93\u68c0\u7d22\u5de5\u5177\u3002";

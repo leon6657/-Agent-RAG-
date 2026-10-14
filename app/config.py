@@ -7,6 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _positive_int_env(name: str, default: int, *, maximum: int) -> int:
+    value = os.getenv(name)
+    try:
+        parsed = int(value) if value is not None else default
+    except (TypeError, ValueError):
+        return default
+    return parsed if 1 <= parsed <= maximum else default
+
+
 @dataclass
 class Config:
     deepseek_api_key: str = field(
@@ -30,10 +39,14 @@ class Config:
         default_factory=lambda: os.getenv("TAVILY_API_KEY", "")
     )
     tavily_max_results: int = field(
-        default_factory=lambda: int(os.getenv("TAVILY_MAX_RESULTS", "5"))
+        default_factory=lambda: _positive_int_env(
+            "TAVILY_MAX_RESULTS", 5, maximum=20
+        )
     )
     tavily_timeout_seconds: int = field(
-        default_factory=lambda: int(os.getenv("TAVILY_TIMEOUT_SECONDS", "10"))
+        default_factory=lambda: _positive_int_env(
+            "TAVILY_TIMEOUT_SECONDS", 10, maximum=60
+        )
     )
 
     chroma_persist_dir: str = field(

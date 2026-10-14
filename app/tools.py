@@ -2,8 +2,10 @@
 
 import datetime
 import json
+import logging
 
 _TOOL_REGISTRY = {}
+logger = logging.getLogger(__name__)
 
 
 def _register(func, name=None):
@@ -134,8 +136,9 @@ def execute_with_metadata(name: str, arguments: str) -> dict:
     if name == "search_knowledge_base":
         try:
             return _search_knowledge_base_with_metadata(**args)
-        except Exception as exc:
-            return _result(name, f"工具执行失败：{exc}", error="execution_error")
+        except Exception:
+            logger.error("Tool execution failed: %s", name)
+            return _result(name, "工具执行失败，请稍后重试。", error="execution_error")
 
     if name == "search_web":
         from app.web_search import WebSearchError
@@ -144,16 +147,18 @@ def execute_with_metadata(name: str, arguments: str) -> dict:
             return _search_web_with_metadata(**args)
         except WebSearchError as exc:
             return _result(name, str(exc), error=exc.code)
-        except Exception as exc:
-            return _result(name, f"工具执行失败：{exc}", error="execution_error")
+        except Exception:
+            logger.error("Tool execution failed: %s", name)
+            return _result(name, "工具执行失败，请稍后重试。", error="execution_error")
 
     func = _TOOL_REGISTRY.get(name)
     if not func:
         return _result(name, f"未知工具：{name}", error="unknown_tool")
     try:
         return _result(name, str(func(**args)))
-    except Exception as exc:
-        return _result(name, f"工具执行失败：{exc}", error="execution_error")
+    except Exception:
+        logger.error("Tool execution failed: %s", name)
+        return _result(name, "工具执行失败，请稍后重试。", error="execution_error")
 
 
 def execute(name: str, arguments: str) -> str:

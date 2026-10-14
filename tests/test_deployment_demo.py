@@ -45,6 +45,12 @@ def test_demo_deployment_doc_mentions_required_cloud_settings():
     assert "Railway" in doc
 
 
+def test_windows_docker_command_uses_cmd_fence_for_caret_continuation():
+    doc = Path("docs/deployment-demo.md").read_text(encoding="utf-8")
+
+    assert "```cmd\ndocker build -t rag-workbench-demo ." in doc
+
+
 def test_docker_documentation_requires_prebuilt_fixed_knowledge_artifacts():
     readme = Path("README.md").read_text(encoding="utf-8")
     doc = Path("docs/deployment-demo.md").read_text(encoding="utf-8")

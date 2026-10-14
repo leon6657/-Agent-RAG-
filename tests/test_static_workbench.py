@@ -91,6 +91,13 @@ def test_workbench_displays_safe_web_sources():
     assert "联网搜索" in html
 
 
+def test_workbench_does_not_claim_web_sources_when_search_failed_or_empty():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+
+    assert 'const hasWebSources = sources.some(source => source.source_type === "web")' in html
+    assert "Agent 已调用联网搜索，但未返回可用网页来源。" in html
+
+
 def test_workbench_displays_agent_error_events():
     html = Path("static/index.html").read_text(encoding="utf-8")
 

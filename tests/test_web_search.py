@@ -95,6 +95,23 @@ def test_search_rejects_non_numeric_result_score(monkeypatch):
     assert raised.value.code == "invalid_response"
 
 
+@pytest.mark.parametrize("score", [float("nan"), float("inf"), float("-inf")])
+def test_search_rejects_non_finite_result_score(monkeypatch, score):
+    monkeypatch.setattr(web_search.config, "tavily_api_key", "test-key")
+    monkeypatch.setattr(
+        web_search.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(
+            {"results": [{"url": "https://example.com/rag", "score": score}]}
+        ),
+    )
+
+    with pytest.raises(web_search.WebSearchError, match="结果格式异常") as raised:
+        web_search.search("RAG")
+
+    assert raised.value.code == "invalid_response"
+
+
 def test_search_returns_empty_list_for_empty_results(monkeypatch):
     monkeypatch.setattr(web_search.config, "tavily_api_key", "test-key")
     monkeypatch.setattr(
