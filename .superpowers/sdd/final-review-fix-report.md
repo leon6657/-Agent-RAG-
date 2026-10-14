@@ -53,7 +53,7 @@ E:\software\Anaconda3\python.exe -m pytest -q tests/test_web_search.py tests/tes
 
 ## 提交
 
-- 待提交：本报告将在提交创建后补充提交哈希。
+- 实现提交：`778f422 fix: harden tavily tool agent handling`。
 
 ## 风险与关注项
 
