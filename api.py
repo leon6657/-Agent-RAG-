@@ -19,6 +19,7 @@ from app.config import config
 ROOT_DIR = Path(__file__).resolve().parent
 _LAST_INTERACTION: dict[str, Any] | None = None
 _STREAM_SERIALIZATION_ERROR = {"event": "error", "message": "流式响应数据异常，请稍后重试。"}
+_STREAM_UPSTREAM_ERROR = {"event": "error", "message": "流式响应服务暂时不可用，请稍后重试。"}
 
 
 def _log_path() -> Path:
@@ -115,15 +116,18 @@ def _record_from_response(question: str, response: dict[str, Any], action: str =
 
 def _safe_ndjson_events(events, question: str, action: str, default_meta: dict[str, Any]):
     meta = default_meta
-    for event in events:
-        try:
-            line = json.dumps(event, ensure_ascii=False, allow_nan=False)
-        except (TypeError, ValueError):
-            yield json.dumps(_STREAM_SERIALIZATION_ERROR, ensure_ascii=False) + "\n"
-            break
-        if isinstance(event, dict) and event.get("event") == "meta":
-            meta = event
-        yield line + "\n"
+    try:
+        for event in events:
+            try:
+                line = json.dumps(event, ensure_ascii=False, allow_nan=False)
+            except (TypeError, ValueError):
+                yield json.dumps(_STREAM_SERIALIZATION_ERROR, ensure_ascii=False, allow_nan=False) + "\n"
+                break
+            if isinstance(event, dict) and event.get("event") == "meta":
+                meta = event
+            yield line + "\n"
+    except Exception:
+        yield json.dumps(_STREAM_UPSTREAM_ERROR, ensure_ascii=False, allow_nan=False) + "\n"
     _record_from_response(question, meta, action=action)
 
 

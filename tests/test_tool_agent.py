@@ -241,12 +241,16 @@ def test_stream_passes_tool_results_in_a_structured_untrusted_boundary(monkeypat
 
 
 def test_stream_answers_directly_when_model_needs_no_tool(monkeypatch):
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return _response() if not kwargs.get("stream") else _stream_response("你好。")
+
     client = SimpleNamespace(
         chat=SimpleNamespace(
             completions=SimpleNamespace(
-                create=lambda **kwargs: _response()
-                if not kwargs.get("stream")
-                else _stream_response("你好。")
+                create=create
             )
         )
     )
@@ -257,6 +261,7 @@ def test_stream_answers_directly_when_model_needs_no_tool(monkeypatch):
     assert {"event": "token", "text": "你好。"} in events
     meta = next(event for event in events if event["event"] == "meta")
     assert meta["tools"] == []
+    assert calls[0]["tool_choice"] == "auto"
 
 
 def test_stream_returns_time_tool_to_model(monkeypatch):
