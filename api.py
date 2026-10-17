@@ -18,6 +18,7 @@ from app.config import config
 
 ROOT_DIR = Path(__file__).resolve().parent
 _LAST_INTERACTION: dict[str, Any] | None = None
+_STREAM_SERIALIZATION_ERROR = {"event": "error", "message": "流式响应数据异常，请稍后重试。"}
 
 
 def _log_path() -> Path:
@@ -110,6 +111,20 @@ def _record_from_response(question: str, response: dict[str, Any], action: str =
         top_score=top_score if isinstance(top_score, (int, float)) else None,
         sources_count=len(sources) if isinstance(sources, list) else 0,
     )
+
+
+def _safe_ndjson_events(events, question: str, action: str, default_meta: dict[str, Any]):
+    meta = default_meta
+    for event in events:
+        try:
+            line = json.dumps(event, ensure_ascii=False, allow_nan=False)
+        except (TypeError, ValueError):
+            yield json.dumps(_STREAM_SERIALIZATION_ERROR, ensure_ascii=False) + "\n"
+            break
+        if isinstance(event, dict) and event.get("event") == "meta":
+            meta = event
+        yield line + "\n"
+    _record_from_response(question, meta, action=action)
 
 
 def _background_warmup():
@@ -238,12 +253,9 @@ async def query_stream(req: QueryRequest):
     from app.query import ask_stream_events
 
     def generate():
-        meta: dict[str, Any] = {}
-        for event in ask_stream_events(req.question):
-            if event.get("event") == "meta":
-                meta = event
-            yield json.dumps(event, ensure_ascii=False) + "\n"
-        _record_from_response(req.question, meta, action="query_stream")
+        yield from _safe_ndjson_events(
+            ask_stream_events(req.question), req.question, "query_stream", {}
+        )
 
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 
@@ -261,12 +273,9 @@ async def chat_stream(req: QueryRequest):
     from app.agent import chat_stream_events
 
     def generate():
-        meta: dict[str, Any] = {}
-        for event in chat_stream_events(req.question):
-            if event.get("event") == "meta":
-                meta = event
-            yield json.dumps(event, ensure_ascii=False) + "\n"
-        _record_from_response(req.question, meta or {"mode": "agent"}, action="chat_stream")
+        yield from _safe_ndjson_events(
+            chat_stream_events(req.question), req.question, "chat_stream", {"mode": "agent"}
+        )
 
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 

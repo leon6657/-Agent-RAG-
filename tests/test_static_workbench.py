@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import textwrap
 
 
 def test_workbench_page_contains_core_regions():
@@ -89,6 +91,49 @@ def test_workbench_displays_safe_web_sources():
     assert "function isSafeExternalUrl" in html
     assert 'link.rel = "noopener noreferrer"' in html
     assert "联网搜索" in html
+
+
+def test_workbench_only_creates_secure_links_for_https_web_sources():
+    html = Path("static/index.html").read_text(encoding="utf-8")
+    script = html.split("function isSafeExternalUrl", 1)[1].split("function setLoading", 1)[0]
+    node_program = """
+    class Element {
+      constructor(tag) { this.tag = tag; this.children = []; this.className = ""; }
+      appendChild(child) { this.children.push(child); }
+      set textContent(value) { this._textContent = value; }
+      get textContent() { return this._textContent; }
+    }
+    const sourceList = new Element("sources");
+    const trustState = new Element("state");
+    const trustDetail = new Element("detail");
+    const scoreState = new Element("score");
+    const document = { createElement: tag => new Element(tag) };
+    function setStatus() {}
+    """ + "function isSafeExternalUrl" + script + """
+    updateEvidence({
+      mode: "tool_agent",
+      sources: [
+        {source_type: "web", url: "https://example.com", title: "HTTPS"},
+        {source_type: "web", url: "http://example.com", title: "HTTP"},
+        {source_type: "web", url: "javascript:alert(1)", title: "JavaScript"}
+      ]
+    });
+    const names = sourceList.children.map(card => card.children[0].children[0]);
+    const links = names.filter(name => name.tag === "a");
+    if (links.length !== 1 || links[0].href !== "https://example.com" ||
+        links[0].target !== "_blank" || links[0].rel !== "noopener noreferrer") {
+      process.exit(1);
+    }
+    """
+
+    result = subprocess.run(
+        ["node", "-e", textwrap.dedent(node_program)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_workbench_does_not_claim_web_sources_when_search_failed_or_empty():

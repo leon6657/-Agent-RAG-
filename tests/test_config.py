@@ -56,10 +56,13 @@ def test_tavily_config_can_be_configured_from_environment(monkeypatch):
 @pytest.mark.parametrize(
     ("name", "value", "field", "default"),
     [
+        ("TAVILY_MAX_RESULTS", "not-an-integer", "tavily_max_results", 5),
         ("TAVILY_MAX_RESULTS", "0", "tavily_max_results", 5),
         ("TAVILY_MAX_RESULTS", "-1", "tavily_max_results", 5),
         ("TAVILY_MAX_RESULTS", "21", "tavily_max_results", 5),
         ("TAVILY_TIMEOUT_SECONDS", "not-an-integer", "tavily_timeout_seconds", 10),
+        ("TAVILY_TIMEOUT_SECONDS", "0", "tavily_timeout_seconds", 10),
+        ("TAVILY_TIMEOUT_SECONDS", "-1", "tavily_timeout_seconds", 10),
         ("TAVILY_TIMEOUT_SECONDS", "61", "tavily_timeout_seconds", 10),
     ],
 )
